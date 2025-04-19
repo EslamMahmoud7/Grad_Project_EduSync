@@ -7,6 +7,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Seeding\**" />
+    <Compile Remove="Services\StudentService\**" />
+    <Content Remove="Seeding\**" />
+    <Content Remove="Services\StudentService\**" />
+    <EmbeddedResource Remove="Seeding\**" />
+    <EmbeddedResource Remove="Services\StudentService\**" />
+    <None Remove="Seeding\**" />
+    <None Remove="Services\StudentService\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.15" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.15" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.15">
       <PrivateAssets>all</PrivateAssets>
@@ -22,10 +34,6 @@
 
   <ItemGroup>
     <Folder Include="Controllers\" />
-    <Folder Include="Services\StudentService\" />
-    <Folder Include="Services\" />
-    <Folder Include="Services\TokenService\" />
-    <Folder Include="Seeding\" />
   </ItemGroup>
 
 </Project>

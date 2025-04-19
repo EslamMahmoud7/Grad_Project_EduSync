@@ -1,4 +1,5 @@
 using Grad_Project_LMS.MainContext;
+using Grad_Project_LMS.Services.TokenService;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +15,8 @@ builder.Services.AddDbContext<MainDBContext>(option =>
 {
     option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+TokenConfiguration.ConfigurJWTToken(builder.Services, builder.Configuration);
+
 
 var app = builder.Build();
 
