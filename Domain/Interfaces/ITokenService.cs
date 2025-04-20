@@ -1,6 +1,6 @@
-﻿using Grad_Project_LMS.Models;
+﻿using Domain.Entities;
 
-namespace Grad_Project_LMS.Interfaces
+namespace Domain.Interfaces
 {
     public interface ITokenService
     {

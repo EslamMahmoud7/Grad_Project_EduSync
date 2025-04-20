@@ -1,11 +1,12 @@
-﻿using Grad_Project_LMS.Interfaces;
-using Grad_Project_LMS.Models;
+﻿using Domain.Interfaces;
+using Domain.Entities;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.Extensions.Configuration;
 
-namespace Grad_Project_LMS.Services.TokenService
+namespace Infrastructure.Services.TokenService
 {
     public class GenerateToken : ITokenService
     {
@@ -20,8 +21,8 @@ namespace Grad_Project_LMS.Services.TokenService
             var PrivateClaims = new List<Claim>()
             {
                 new Claim (ClaimTypes.Name, student.FirstName),
-                new Claim (ClaimTypes.Email, student.Email),
-                new Claim ("Id", student.Id.ToString()),
+                //new Claim (ClaimTypes.Email, student.Email),
+                //new Claim ("Id", student.Id.ToString()),
             };
 
             var AuthKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWTToken:AuthKey"] ?? "auth key null"));

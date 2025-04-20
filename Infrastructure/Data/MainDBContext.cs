@@ -1,13 +1,13 @@
-﻿using Grad_Project_LMS.Models;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using Domain.Entities;
 
-namespace Grad_Project_LMS.MainContext
+namespace Infrastructure.Data
 {
     public class MainDBContext : DbContext
     {
         public MainDBContext(DbContextOptions<MainDBContext> dbContext) : base(dbContext)
         {
-            
+
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -18,3 +18,5 @@ namespace Grad_Project_LMS.MainContext
         public DbSet<Student> students { get; set; }
     }
 }
+
+
