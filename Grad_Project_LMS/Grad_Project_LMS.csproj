@@ -8,16 +8,16 @@
 
   <ItemGroup>
     <Compile Remove="Seeding\**" />
-    <Compile Remove="Services\StudentService\**" />
     <Content Remove="Seeding\**" />
-    <Content Remove="Services\StudentService\**" />
     <EmbeddedResource Remove="Seeding\**" />
-    <EmbeddedResource Remove="Services\StudentService\**" />
     <None Remove="Seeding\**" />
-    <None Remove="Services\StudentService\**" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.15">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
@@ -26,6 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Services\" />
     <Folder Include="Services\" />
   </ItemGroup>
 

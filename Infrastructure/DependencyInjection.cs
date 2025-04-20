@@ -18,7 +18,7 @@ namespace Infrastructure
         public static IServiceCollection AddApplicationDI(this IServiceCollection services, IConfiguration configurations)
         {
             services.AddDbContext<MainDBContext>(options =>
-                options.UseSqlServer(configurations.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(configurations.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("Infrastructure")));
 
             services.AddAuthentication().AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
             {
