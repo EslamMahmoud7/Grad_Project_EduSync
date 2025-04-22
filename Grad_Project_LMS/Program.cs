@@ -16,33 +16,21 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddApplicationDI(builder.Configuration);
+//builder.Services.AddScoped<ITokenService, GenerateToken>();
+//builder.Services.AddScoped<IEmailService, EmailService>();
 
-builder.Services.AddDbContext<MainDBContext>(option =>
-{
-    option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("Infrastructure"));
-});
+//builder.Services.AddIdentity<Student, IdentityRole>(option =>
+//{
+//    option.Tokens.PasswordResetTokenProvider = TokenOptions.DefaultProvider;
 
-builder.Services.AddDbContext<IdentityContext>(option =>
-{
-    option.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConnection"));
-
-});
-
-builder.Services.AddScoped<ITokenService, GenerateToken>();
-builder.Services.AddScoped<IEmailService, EmailService>();
-
-builder.Services.AddIdentity<Student, IdentityRole>(option =>
-{
-    option.Tokens.PasswordResetTokenProvider = TokenOptions.DefaultProvider;
-
-    option.Password.RequiredUniqueChars = 2;
-    option.Password.RequireDigit = false;
-    option.Password.RequiredLength = 8;
-    option.Password.RequireNonAlphanumeric = false;
-    option.Password.RequiredUniqueChars = 0;
-    option.Password.RequireLowercase = false;
-    option.Password.RequireUppercase = false;
-}).AddEntityFrameworkStores<IdentityContext>().AddDefaultTokenProviders();
+//    option.Password.RequiredUniqueChars = 2;
+//    option.Password.RequireDigit = false;
+//    option.Password.RequiredLength = 8;
+//    option.Password.RequireNonAlphanumeric = false;
+//    option.Password.RequiredUniqueChars = 0;
+//    option.Password.RequireLowercase = false;
+//    option.Password.RequireUppercase = false;
+//}).AddEntityFrameworkStores<IdentityContext>().AddDefaultTokenProviders();
 
 
 

@@ -10,6 +10,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
+using Domain.Interfaces;
+using Domain.Services;
+using Domain.Entities;
+using Microsoft.AspNetCore.Identity;
 
 namespace Infrastructure
 {
@@ -17,21 +21,34 @@ namespace Infrastructure
     {
         public static IServiceCollection AddApplicationDI(this IServiceCollection services, IConfiguration configurations)
         {
-            services.AddDbContext<MainDBContext>(options =>
-                options.UseSqlServer(configurations.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("Infrastructure")));
+            services.ServicesRegisteration();
+            services.JWTTokenConfiguration(configurations);
+            services.DatabaseContexts(configurations);
+            services.IdentityConfiguration();
 
+            return services;
+        }
+
+        public static IServiceCollection ServicesRegisteration(this IServiceCollection services)
+        {
+            services.AddScoped<ITokenService, GenerateToken>();
+            services.AddScoped<IEmailService, EmailService>();
+            return services;
+        }
+        public static IServiceCollection JWTTokenConfiguration(this IServiceCollection services, IConfiguration configuration)
+        {
             services.AddAuthentication().AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
             {
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateAudience = true,
-                    ValidAudience = configurations["JWTToken:ValidAudience"],
+                    ValidAudience = configuration["JWTToken:ValidAudience"],
 
                     ValidateIssuer = true,
-                    ValidIssuer = configurations["JWTToken:ValidIssuer"],
+                    ValidIssuer = configuration["JWTToken:ValidIssuer"],
 
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configurations["JWTToken:AuthKey"] ?? string.Empty)),
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWTToken:AuthKey"] ?? string.Empty)),
 
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero,
@@ -39,7 +56,31 @@ namespace Infrastructure
                     RoleClaimType = ClaimTypes.Role,
                 };
             });
+            return services;
+        }
 
+        public static IServiceCollection DatabaseContexts(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddDbContext<MainDBContext>(options =>
+            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("Infrastructure")));
+            services.AddDbContext<IdentityContext>(options =>
+                options.UseSqlServer(configuration.GetConnectionString("IdentityConnection")));
+            return services;
+        }
+
+        public static IServiceCollection IdentityConfiguration(this IServiceCollection services)
+        {
+            services.AddIdentity<Student, IdentityRole>(option =>
+            {
+                option.Tokens.PasswordResetTokenProvider = TokenOptions.DefaultProvider;
+                option.Password.RequiredUniqueChars = 2;
+                option.Password.RequireDigit = false;
+                option.Password.RequiredLength = 8;
+                option.Password.RequireNonAlphanumeric = false;
+                option.Password.RequiredUniqueChars = 0;
+                option.Password.RequireLowercase = false;
+                option.Password.RequireUppercase = false;
+            }).AddEntityFrameworkStores<IdentityContext>().AddDefaultTokenProviders();
             return services;
         }
     }
