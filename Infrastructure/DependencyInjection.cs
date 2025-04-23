@@ -14,6 +14,7 @@ using Domain.Interfaces;
 using Domain.Services;
 using Domain.Entities;
 using Microsoft.AspNetCore.Identity;
+using Infrastructure.Services.TokenService;
 
 namespace Infrastructure
 {
