@@ -16,29 +16,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddApplicationDI(builder.Configuration);
-//builder.Services.AddScoped<ITokenService, GenerateToken>();
-//builder.Services.AddScoped<IEmailService, EmailService>();
-
-//builder.Services.AddIdentity<Student, IdentityRole>(option =>
-//{
-//    option.Tokens.PasswordResetTokenProvider = TokenOptions.DefaultProvider;
-
-//    option.Password.RequiredUniqueChars = 2;
-//    option.Password.RequireDigit = false;
-//    option.Password.RequiredLength = 8;
-//    option.Password.RequireNonAlphanumeric = false;
-//    option.Password.RequiredUniqueChars = 0;
-//    option.Password.RequireLowercase = false;
-//    option.Password.RequireUppercase = false;
-//}).AddEntityFrameworkStores<IdentityContext>().AddDefaultTokenProviders();
-
-
-
-
-
-//TokenConfiguration.ConfigurJWTToken(builder.Services, builder.Configuration);
-
-
 
 var app = builder.Build();
 
