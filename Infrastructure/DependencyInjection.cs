@@ -15,6 +15,7 @@ using Domain.Services;
 using Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Infrastructure.Services.TokenService;
+using Infrastructure.Services.AccountService;
 
 namespace Infrastructure
 {
@@ -34,6 +35,7 @@ namespace Infrastructure
         {
             services.AddScoped<ITokenService, GenerateToken>();
             services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<IAccountService, AccountService>();
             return services;
         }
         public static IServiceCollection JWTTokenConfiguration(this IServiceCollection services, IConfiguration configuration)

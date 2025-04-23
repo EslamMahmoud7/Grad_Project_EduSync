@@ -18,6 +18,7 @@ namespace Grad_Project_LMS.Controller
         private readonly IConfiguration _configuration;
         private readonly IEmailService _emailService;
         private readonly ILogger<StudentAccountController> _logger;
+        private readonly IAccountService _accountService;
 
         public StudentAccountController
             (
@@ -26,7 +27,8 @@ namespace Grad_Project_LMS.Controller
             ITokenService tokenService,
             IConfiguration configuration,
             IEmailService emailService,
-            ILogger<StudentAccountController> logger
+            ILogger<StudentAccountController> logger,
+            IAccountService accountService
 
             )
         {
@@ -36,121 +38,84 @@ namespace Grad_Project_LMS.Controller
             _configuration = configuration;
             _emailService = emailService;
             _logger = logger;
+            _accountService = accountService;
         }
 
         [HttpPost("Registeration")]
         public async Task<ActionResult<UserDTO>> Registeration(RegisterationDTO registerationDTO)
         {
-            //Helper.Vaildations.VaildateRegistration(registerationDTO);
-
-
-            if (await _userManager.FindByEmailAsync(registerationDTO.email) != null)
-                return BadRequest($"email already exists");
-
-            if (!ModelState.IsValid)
-                return BadRequest("validation error");
-
-            var Student = new Student()
-            {
-                Email = registerationDTO.email,
-                FirstName = registerationDTO.FirstName,
-                LastName = registerationDTO.LastName,
-                FirstLogin = DateTime.Now,
-                UserName = registerationDTO.email.Split("@")[0]
-
-            };
-
-            var result = await _userManager.CreateAsync(Student, registerationDTO.password);
-
-            if (!result.Succeeded)
-            {
-                var errros = result.Errors.Select(error => error.Description);
-                return BadRequest(errros);
-            }
-
             try
             {
-                return Ok(new UserDTO
-                {
-                    FirstName = registerationDTO.FirstName,
-                    LastName = registerationDTO.LastName,
-                    Email = registerationDTO.email,
-                    Password = registerationDTO.password,
-                    Token = await _tokenService.GenerateJWTToken(Student)
-                });
+                if (!ModelState.IsValid) return BadRequest(ModelState);
+                var result = await _accountService.Register(registerationDTO);
+                return Ok(result);
             }
             catch (Exception ex)
             {
-                throw;
+                _logger.LogError(ex.Message);
+                return BadRequest(ex.Message);
             }
-
         }
 
         [HttpPost("Login")]
         public async Task<ActionResult<UserDTO>> Login(LoginDTO loginDTO)
         {
-            var Student = await _userManager.FindByEmailAsync(loginDTO.Email);
-            if (Student == null) return BadRequest("email ");
-
-            var Result = await _signInManager.CheckPasswordSignInAsync(Student, loginDTO.Password, false);
-            if (!Result.Succeeded) return BadRequest("email or password is incorrect");
-
-            return Ok(new UserDTO()
+            try
             {
-                FirstName = Student.FirstName ?? "unknown",
-                LastName = Student.LastName ?? "unknown",
-                Email = loginDTO.Email,
-                Password = loginDTO.Password,
-                Token = await _tokenService.GenerateJWTToken(Student)
-            });
+                if (!ModelState.IsValid) return BadRequest(ModelState);
+                var result = await _accountService.Login(loginDTO);
+                return Ok(result);
+
+            }
+            catch(UnauthorizedAccessException iex)
+            {
+                _logger.LogError(iex.Message);
+                return Unauthorized(iex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return Unauthorized(ex.Message);
+            }
         }
 
         [HttpPost("ForgetPassword")]
         public async Task<IActionResult> ForgetPassword(ForgetPasswordDTO forgetPasswordDTO)
         {
-            var Student = await _userManager.FindByEmailAsync(forgetPasswordDTO.Email);
-            if (Student == null) return BadRequest("this email does not exist");
-
-            var Token = await _userManager.GeneratePasswordResetTokenAsync(Student);
-            var resetLink = $"{_configuration["AppUrl"]}/reset-password?email={forgetPasswordDTO.Email}&token={Uri.EscapeDataString(Token)}";
-
             try
             {
-                var subject = "Password Reset Request";
-                var body = $"Please reset your password using the following link: <a href='{resetLink}'>Reset Password</a>";
-                var toEmail = forgetPasswordDTO.Email;
-
-                // Send the email (replace with your own email sending logic)
-                await _emailService.SendEmail(toEmail, subject, body);
-
-                _logger.LogInformation($"Password reset link sent to: {toEmail}");
-
+                if (!ModelState.IsValid) return BadRequest(ModelState);
+                var result = await _accountService.ForgetPassword(forgetPasswordDTO);
+                return Ok(result);
+            }
+            catch(ArgumentException aex)
+            {
+                return BadRequest(aex.Message);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
-                return StatusCode(500, "Error sending email. Please try again later.");
+                return StatusCode(500, ex.Message);
+                throw;
             }
-            return Ok("reset link sent for your rmail");
         }
 
         [HttpPost("ResetPassword")]
         public async Task<IActionResult> ResetPassword(ResetPasswordDTO resetPasswordDTO)
         {
-
-            var student = await _userManager.FindByEmailAsync(resetPasswordDTO.Email);
-            if (student is null) return BadRequest("This email does not exist");
-
-            var decodedToken = WebUtility.UrlDecode(resetPasswordDTO.Token);
-
-            var result = await _userManager.ResetPasswordAsync(student, decodedToken, resetPasswordDTO.Password);
-            if (!result.Succeeded)
+            try
             {
-                var errors = result.Errors.Select(error => error.Description).ToList();
-                _logger.LogWarning("ResetPassword errors: {Errors}", string.Join(", ", errors));
-                return BadRequest(errors);
+                if (!ModelState.IsValid) return BadRequest("invalid modelstate");
+                var result = await _accountService.ResetPassword(resetPasswordDTO);
+                return Ok(result);
             }
-            return Ok("Password has been reset successfully");
+            catch (ArgumentException aex)
+            {
+                return BadRequest(aex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode (500, ex.Message);
+            }
         }
     }
 }

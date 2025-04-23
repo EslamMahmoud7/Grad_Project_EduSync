@@ -23,14 +23,12 @@ namespace Infrastructure.Services.AccountService
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
 
-
         public AccountService(SignInManager<Student> signInManager,
             UserManager<Student> userManager,
             ILogger<AccountService> logger,
             ITokenService tokenService,
             IEmailService emailService,
             IConfiguration configuration
-
             )
         {
             _signInManager = signInManager;
@@ -43,8 +41,12 @@ namespace Infrastructure.Services.AccountService
         public async Task<string> ForgetPassword(ForgetPasswordDTO forgetPasswordDTO)
         {
             var Student = await _userManager.FindByEmailAsync(forgetPasswordDTO.Email);
-            if (Student == null) _logger.LogError("email not exist");
+            if (Student == null)
+            {
+                _logger.LogError("email not exist");
+                throw new ArgumentException("Email does not exist");
 
+            }
             var Token = await _userManager.GeneratePasswordResetTokenAsync(Student);
             var resetLink = $"{_configuration["AppUrl"]}/reset-password?email={forgetPasswordDTO.Email}&token={Uri.EscapeDataString(Token)}";
 
@@ -61,25 +63,32 @@ namespace Infrastructure.Services.AccountService
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
+                throw new Exception();
             }
 
             return "reset link sent successfully";
         }
-
         public async Task<UserDTO> Login(LoginDTO loginDTO)
         {
             var Student = await _userManager.FindByEmailAsync(loginDTO.Email);
-            if (Student == null) _logger.LogError("email not exist");
-
+            if (Student == null)
+            {
+                _logger.LogError("email not exist");
+                throw new UnauthorizedAccessException("email or password is invalid");
+            }
             var result = await _signInManager.CheckPasswordSignInAsync(Student, loginDTO.Password, false);
 
-            if (!result.Succeeded) _logger.LogError("email or password incorrect");
+            if (!result.Succeeded)
+            {
+                _logger.LogError("email or password incorrect");
+                throw new UnauthorizedAccessException("email or password incorrect");
+
+            }
             return new UserDTO()
             {
                 FirstName = Student.FirstName ?? "unknown fname",
                 LastName = Student.LastName ?? "unknown lname",
                 Email = loginDTO.Email,
-                Password = loginDTO.Password,
                 Token = await _tokenService.GenerateJWTToken(Student)
             };
 
@@ -112,15 +121,20 @@ namespace Infrastructure.Services.AccountService
             };
 
         }
-
         public async Task<string> ResetPassword(ResetPasswordDTO resetPasswordDTO)
         {
             var Student = await _userManager.FindByEmailAsync(resetPasswordDTO.Email);
-            if (Student != null) _logger.LogError("student not exist");
-
+            if (Student == null)
+            {
+                _logger.LogError("student not exist");
+                throw new ArgumentException("student is null");
+            }
             var DecodedToken = WebUtility.UrlDecode(resetPasswordDTO.Token);
-            var Result = await _userManager.ResetPasswordAsync(Student, resetPasswordDTO.Token, resetPasswordDTO.Password);
-            if (!Result.Succeeded)  Result.Errors.Select (error => error.Description);
+            var Result = await _userManager.ResetPasswordAsync(Student, DecodedToken, resetPasswordDTO.Password);
+            if (!Result.Succeeded)
+            {
+                throw new ArgumentException();
+            }
             return "Password has been reset successfully";
 
         }
