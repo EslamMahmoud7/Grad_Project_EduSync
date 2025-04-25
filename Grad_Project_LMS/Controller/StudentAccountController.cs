@@ -50,10 +50,16 @@ namespace Grad_Project_LMS.Controller
                 var result = await _accountService.Register(registerationDTO);
                 return Ok(result);
             }
+            catch (ArgumentException aex)
+            {
+                _logger.LogError(aex.Message);
+                return BadRequest(aex.Message);
+            }
+       
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return BadRequest(ex.Message);
+                return StatusCode(500, ex.Message);
             }
         }
 
@@ -67,7 +73,12 @@ namespace Grad_Project_LMS.Controller
                 return Ok(result);
 
             }
-            catch(UnauthorizedAccessException iex)
+            catch(ArgumentException aex)
+            {
+                _logger.LogError(aex.Message);
+                return BadRequest(aex.Message);
+            }
+            catch (UnauthorizedAccessException iex)
             {
                 _logger.LogError(iex.Message);
                 return Unauthorized(iex.Message);
@@ -75,7 +86,7 @@ namespace Grad_Project_LMS.Controller
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return Unauthorized(ex.Message);
+                return StatusCode(500, ex.Message);
             }
         }
 

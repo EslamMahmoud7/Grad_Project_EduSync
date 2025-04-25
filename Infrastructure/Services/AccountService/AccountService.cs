@@ -1,4 +1,5 @@
-﻿using Domain.DTOs;
+﻿using Application.Helper.AccountValidations;
+using Domain.DTOs;
 using Domain.Entities;
 using Domain.Interfaces;
 using Grad_Project_LMS.Controller;
@@ -38,8 +39,12 @@ namespace Infrastructure.Services.AccountService
             _emailService = emailService;
             _configuration = configuration;
         }
+
+
         public async Task<string> ForgetPassword(ForgetPasswordDTO forgetPasswordDTO)
         {
+            ForgetPasswordVaildatoin.ValidateForgetPassword(forgetPasswordDTO);
+
             var Student = await _userManager.FindByEmailAsync(forgetPasswordDTO.Email);
             if (Student == null)
             {
@@ -70,6 +75,8 @@ namespace Infrastructure.Services.AccountService
         }
         public async Task<UserDTO> Login(LoginDTO loginDTO)
         {
+            LoginVaildation.ValidateLogin(loginDTO);
+
             var Student = await _userManager.FindByEmailAsync(loginDTO.Email);
             if (Student == null)
             {
@@ -91,11 +98,11 @@ namespace Infrastructure.Services.AccountService
                 Email = loginDTO.Email,
                 Token = await _tokenService.GenerateJWTToken(Student)
             };
-
         }
-
         public async Task<UserDTO> Register(RegisterationDTO registerationDTO)
         {
+            RegistrationVaildation.RegisterVaildation(registerationDTO);
+
             if (await _userManager.FindByEmailAsync(registerationDTO.email) != null)
                 _logger.LogError("email already exist");
 
@@ -119,10 +126,10 @@ namespace Infrastructure.Services.AccountService
                 Password = registerationDTO.password,
                 Token = await _tokenService.GenerateJWTToken(Student)
             };
-
         }
         public async Task<string> ResetPassword(ResetPasswordDTO resetPasswordDTO)
         {
+            ResetPasswordVaildation.ValidateResetPassword(resetPasswordDTO);
             var Student = await _userManager.FindByEmailAsync(resetPasswordDTO.Email);
             if (Student == null)
             {
@@ -136,7 +143,6 @@ namespace Infrastructure.Services.AccountService
                 throw new ArgumentException();
             }
             return "Password has been reset successfully";
-
         }
     }
 }

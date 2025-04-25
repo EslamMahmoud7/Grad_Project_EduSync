@@ -32,7 +32,7 @@ namespace Infrastructure.Services.TokenService
             var Token = new JwtSecurityToken(
                         audience: _configuration["JWTToken:ValidAudience"],
                         issuer: _configuration["JWTToken:ValidIssuer"],
-                        expires: DateTime.Now.AddDays(double.Parse(_configuration["JWTToken:DurationInDays"] ?? "expire is null days")),
+                        expires: DateTime.Now.AddMinutes(double.Parse(_configuration["JWTToken:DurationInMinutes"] ?? "expire is null days")),
                         claims: PrivateClaims,
                         signingCredentials: Credentials
                 );

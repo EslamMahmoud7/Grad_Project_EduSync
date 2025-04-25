@@ -27,7 +27,6 @@ namespace Infrastructure
             services.JWTTokenConfiguration(configurations);
             services.DatabaseContexts(configurations);
             services.IdentityConfiguration();
-
             return services;
         }
 
@@ -70,7 +69,6 @@ namespace Infrastructure
                 options.UseSqlServer(configuration.GetConnectionString("IdentityConnection")));
             return services;
         }
-
         public static IServiceCollection IdentityConfiguration(this IServiceCollection services)
         {
             services.AddIdentity<Student, IdentityRole>(option =>
