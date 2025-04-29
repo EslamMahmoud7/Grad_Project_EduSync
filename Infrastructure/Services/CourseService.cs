@@ -1,5 +1,6 @@
 ﻿using Domain.DTOs;
 using Domain.Entities;
+using Domain.Interfaces;
 using Domain.Interfaces.IServices;
 using Domain.Interfaces.Repositories;
 using System;
@@ -13,9 +14,12 @@ namespace Infrastructure.Services
     public class CourseService : ICourseService
     {
         private readonly IGenericRepository<Course> _courseGenericRepo;
-        public CourseService(IGenericRepository<Course> CourseGenericRepo)
+        private readonly IPaginationService _paginationService;
+
+        public CourseService(IGenericRepository<Course> CourseGenericRepo, IPaginationService paginationService)
         {
             _courseGenericRepo = CourseGenericRepo;
+            _paginationService = paginationService;
         }
         public async Task<CourseDTO> Add(CourseDTO courseDTO)
         {
@@ -72,6 +76,17 @@ namespace Infrastructure.Services
                 CourseProgress = course.CourseProgress,
                 CourseTitle = course.CourseTitle
             };
+        }
+
+        public async Task<PaginatedResultDTO<CourseDTO>> GetAllPaginated(int pagenumber = 1, int pagesize = 3)
+        {
+            var Courses = await _courseGenericRepo.GetAll();
+            var IQuerableCoursed = Courses.AsQueryable();
+
+            var CourseDTO = IQuerableCoursed.Select(c => MapToCourseDTO(c)).ToList().AsQueryable();
+
+            var PaginatedResult = _paginationService.Paginate(CourseDTO, pagenumber, pagesize);
+            return PaginatedResult;
         }
     }
 }

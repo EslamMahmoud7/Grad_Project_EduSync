@@ -86,7 +86,27 @@ namespace Grad_Project_LMS.Controller
                 throw;
             }
         }
-        [HttpGet("{id:int}")]
+
+        [HttpGet("GetAllPaginatedCourses")]
+        public async Task<ActionResult<PaginatedResultDTO<CourseDTO>>> GetAllPaginatedCourses([FromQuery] int PageNumber = 1, [FromQuery] int PageSize = 3)
+        {
+            try
+            {
+                var PaginatedCourses = await _courseService.GetAllPaginated(PageNumber, PageSize);
+                return Ok(PaginatedCourses);
+            }
+            catch (ArgumentException aex)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+
+        }
+
+       [HttpGet("{id:int}")]
         public async Task<ActionResult<CourseDTO>> GetById(int id)
         {
             try

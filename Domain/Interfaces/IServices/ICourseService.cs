@@ -14,5 +14,6 @@ namespace Domain.Interfaces.IServices
         Task Delete(int id);
         Task<CourseDTO> Get(int id);
         Task<IReadOnlyList<CourseDTO>> GetAll();
+        Task<PaginatedResultDTO<CourseDTO>> GetAllPaginated(int pagenumber = 1, int pagesize = 3);
     }
 }

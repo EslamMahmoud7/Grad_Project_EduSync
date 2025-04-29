@@ -41,6 +41,7 @@ namespace Infrastructure
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<ICourseService, CourseService>();
             services.AddScoped<IGenericRepository<Course>, GenericRepository<Course>>();
+            services.AddScoped<IPaginationService, PaginationService>();
             return services;
         }
         public static IServiceCollection JWTTokenConfiguration(this IServiceCollection services, IConfiguration configuration)
