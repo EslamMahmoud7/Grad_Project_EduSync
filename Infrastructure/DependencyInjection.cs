@@ -16,6 +16,10 @@ using Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Infrastructure.Services.TokenService;
 using Infrastructure.Services.AccountService;
+using Domain.Interfaces.IServices;
+using Infrastructure.Services;
+using Domain.Interfaces.Repositories;
+using Infrastructure.Repositories;
 
 namespace Infrastructure
 {
@@ -35,6 +39,8 @@ namespace Infrastructure
             services.AddScoped<ITokenService, GenerateToken>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IAccountService, AccountService>();
+            services.AddScoped<ICourseService, CourseService>();
+            services.AddScoped<IGenericRepository<Course>, GenericRepository<Course>>();
             return services;
         }
         public static IServiceCollection JWTTokenConfiguration(this IServiceCollection services, IConfiguration configuration)

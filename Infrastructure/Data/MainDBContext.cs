@@ -15,7 +15,8 @@ namespace Infrastructure.Data
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
         }
-        public DbSet<Student> students { get; set; }
+        //public DbSet<Student> students { get; set; }
+        public DbSet<Course> courses { get; set; }
     }
 }
 

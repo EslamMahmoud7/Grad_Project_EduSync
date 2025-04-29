@@ -137,7 +137,7 @@ namespace Infrastructure.Services.AccountService
                 throw new ArgumentException("student is null");
             }
             var DecodedToken = WebUtility.UrlDecode(resetPasswordDTO.Token);
-            var Result = await _userManager.ResetPasswordAsync(Student, DecodedToken, resetPasswordDTO.Password);
+            var Result = await _userManager.ResetPasswordAsync(Student, DecodedToken, resetPasswordDTO.NewPassword);
             if (!Result.Succeeded)
             {
                 throw new ArgumentException();
