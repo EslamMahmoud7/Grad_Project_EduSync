@@ -1,29 +1,47 @@
 ﻿using Domain.DTOs;
 using Domain.Interfaces.IServices;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Reflection.Metadata.Ecma335;
 
 namespace Grad_Project_LMS.Controller
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CourseController : ControllerBase
+    public class LectureController : ControllerBase
     {
-        private readonly ICourseService _courseService;
+        private readonly ILectureService _lectureService;
 
-        public CourseController(ICourseService courseService)
+        public LectureController(ILectureService lectureService)
         {
-            _courseService = courseService;
+            _lectureService = lectureService;
         }
-
         [HttpPost]
-        public async Task<ActionResult<CourseDTO>> AddCourse([FromBody]CourseDTO courseDTO)
+        public async Task<ActionResult<LectureDTO>> AddLecture([FromBody] AddLectureDTO lectureDTO)
         {
             try
             {
-                if (!ModelState.IsValid) return BadRequest("model state is invalid") ;
-                var result = await _courseService.Add(courseDTO);
+                if (!ModelState.IsValid) return BadRequest("model state is invalid");
+                var result = await _lectureService.Add(lectureDTO);
+                return Ok(result);
+            }
+            catch (ArgumentException aex)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+
+        }
+
+        [HttpPut("UpdateLecture")]
+        public async Task<ActionResult<LectureDTO>> UpdateLecture([FromBody] AddLectureDTO lectureDTO)
+        {
+            try
+            {
+                var result = await _lectureService.Update(lectureDTO);
                 return Ok(result);
             }
             catch (ArgumentException aex)
@@ -35,29 +53,13 @@ namespace Grad_Project_LMS.Controller
                 throw;
             }
         }
-        [HttpPut("UpdateCourse")]
-        public async Task<ActionResult<CourseDTO>> UpdateCourse([FromBody]CourseDTO courseDTO)
-        {
-            try
-            {
-                var result = await _courseService.Update(courseDTO);
-                return Ok(result);
-            }
-            catch (ArgumentException aex)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
-        }
+
         [HttpDelete("{id:int}")]
-        public async Task<ActionResult> DeleteCourse(int id)
+        public async Task<ActionResult> DeleteLecture(int id)
         {
             try
             {
-                await _courseService.Delete(id);
+                await _lectureService.Delete(id);
                 return NoContent();
             }
             catch (ArgumentException aex)
@@ -69,13 +71,14 @@ namespace Grad_Project_LMS.Controller
                 throw;
             }
         }
-        [HttpGet("GetAllCourses")]
-        public async Task<ActionResult<IReadOnlyList<CourseDTO>>> GetAllCourses()
+
+        [HttpGet("GetAllLectures")]
+        public async Task<ActionResult<IReadOnlyList<LectureDTO>>> GetAllLectures()
         {
             try
             {
-                var AllCourses = await _courseService.GetAll();
-                return Ok(AllCourses);
+                var AllLectures = await _lectureService.GetAll();
+                return Ok(AllLectures);
             }
             catch (ArgumentException aex)
             {
@@ -87,13 +90,13 @@ namespace Grad_Project_LMS.Controller
             }
         }
 
-        [HttpGet("GetAllPaginatedCourses")]
-        public async Task<ActionResult<PaginatedResultDTO<CourseDTO>>> GetAllPaginatedCourses([FromQuery] int PageNumber = 1, [FromQuery] int PageSize = 3)
+        [HttpGet("GetAllPaginatedLectures")]
+        public async Task<ActionResult<PaginatedResultDTO<LectureDTO>>> GetAllPaginatedLectures([FromQuery] int PageNumber = 1, [FromQuery] int PageSize = 3)
         {
             try
             {
-                var PaginatedCourses = await _courseService.GetAllPaginated(PageNumber, PageSize);
-                return Ok(PaginatedCourses);
+                var PaginatedLectures = await _lectureService.GetAllPaginated(PageNumber, PageSize);
+                return Ok(PaginatedLectures);
             }
             catch (ArgumentException aex)
             {
@@ -105,12 +108,17 @@ namespace Grad_Project_LMS.Controller
             }
         }
 
-       [HttpGet("{id:int}")]
-        public async Task<ActionResult<CourseDTO>> GetById(int id)
+
+
+
+
+
+        [HttpGet("{id:int}")]
+        public async Task<ActionResult<LectureDTO>> GetById(int id)
         {
             try
             {
-                var Courese = await _courseService.Get(id);
+                var Courese = await _lectureService.Get(id);
                 return Ok(Courese);
             }
             catch (ArgumentException aex)
@@ -122,5 +130,8 @@ namespace Grad_Project_LMS.Controller
                 throw;
             }
         }
+
+
+
     }
 }

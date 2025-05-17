@@ -17,6 +17,8 @@ namespace Infrastructure.Data
         }
         //public DbSet<Student> students { get; set; }
         public DbSet<Course> courses { get; set; }
+        public DbSet<Lecture> lectures { get; set; }
+
     }
 }
 

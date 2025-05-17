@@ -1,4 +1,5 @@
-﻿using Domain.Interfaces.Repositories;
+﻿using Domain.Entities;
+using Domain.Interfaces.Repositories;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -27,10 +28,26 @@ namespace Infrastructure.Repositories
         }
             
         public async Task<IReadOnlyList<T>> GetAll()
-            =>  await _dBContext.Set<T>().ToListAsync();
+        {
+            if (typeof(T)==typeof(Lecture))
+            {
+                var Lectures = await _dBContext.Set<Lecture>().Include(l => l.Course).ToListAsync();
+                return (IReadOnlyList<T>)Lectures;
+            }
+            return await _dBContext.Set<T>().ToListAsync();
+        }
+              
 
         public async Task<T> GetById(int id)
-            => await _dBContext.Set<T>().FindAsync(id);
+        {
+            if (typeof(T) == typeof(Lecture))
+            {
+                var Lecture = await _dBContext.Set<Lecture>().Include(L => L.Course).FirstOrDefaultAsync(x => x.Id == id);
+                return (T)(object)Lecture;
+            }
+            return await _dBContext.Set<T>().FindAsync(id);
+        }
+            
 
         public async Task Update(T entity)
         {

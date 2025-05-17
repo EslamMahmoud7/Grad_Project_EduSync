@@ -40,7 +40,10 @@ namespace Infrastructure
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<ICourseService, CourseService>();
+            services.AddScoped<ILectureService, LectureService>();
             services.AddScoped<IGenericRepository<Course>, GenericRepository<Course>>();
+            services.AddScoped<IGenericRepository<Lecture>, GenericRepository<Lecture>>();
+
             services.AddScoped<IPaginationService, PaginationService>();
             return services;
         }
