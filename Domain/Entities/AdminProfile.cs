@@ -8,14 +8,13 @@ namespace Domain.Entities
 {
     public class AdminProfile
     {
-        public string Id { get; set; }
-        public string UserId { get; set; }
-        public User User { get; set; }
+        public required string Id { get; set; }
+        public required string UserId { get; set; }
+        public required User User { get; set; }
 
-        public string Department { get; set; }
-        public string AvatarUrl { get; set; }
+        public required string Department { get; set; }
+        public string AvatarUrl { get; set; } = string.Empty;
 
-        public ICollection<Announcement> Announcements { get; set; }
-        public ICollection<Notification> Notifications { get; set; }
+        public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
     }
 }
