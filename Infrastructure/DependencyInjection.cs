@@ -41,7 +41,7 @@ namespace Infrastructure
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IGenericRepository<Course>, GenericRepository<Course>>();
             services.AddScoped<IGenericRepository<Lecture>, GenericRepository<Lecture>>();
-
+            services.AddScoped<IProfileService, ProfileService>();
             services.AddScoped<IPaginationService, PaginationService>();
             return services;
         }

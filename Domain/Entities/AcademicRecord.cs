@@ -15,9 +15,7 @@ namespace Domain.Entities
         public string Grade { get; set; }
         public string Term { get; set; }
         public string Instructor { get; set; }
-
-        public int StudentProfileId { get; set; }
-        public StudentProfile StudentProfile { get; set; }
+        public string StudentId { get; set; }
     }
 
 }

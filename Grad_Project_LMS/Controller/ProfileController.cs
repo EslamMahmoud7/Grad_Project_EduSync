@@ -2,13 +2,12 @@
 using Domain.Interfaces.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
-namespace Grad_Project_LMS.Controller
+namespace Grad_Project_LMS.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Route("api/[controller]")]
+
     public class ProfileController : ControllerBase
     {
         private readonly IProfileService _profileService;
@@ -18,15 +17,25 @@ namespace Grad_Project_LMS.Controller
             _profileService = profileService;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<ProfileDTO>> GetProfile()
+        [HttpGet("{userId}")]
+        public async Task<ActionResult<ProfileDTO>> GetProfile(string userId)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
+            if (string.IsNullOrWhiteSpace(userId))
+                return BadRequest("userId is required");
 
-            var profile = await _profileService.GetProfileById(userId);
-            return Ok(profile);
+            try
+            {
+                var dto = await _profileService.GetProfileById(userId);
+                return Ok(dto);
+            }
+            catch (ArgumentException)
+            {
+                return NotFound($"No profile found for user {userId}");
+            }
+            catch
+            {
+                return StatusCode(500, "An unexpected error occurred.");
+            }
         }
     }
 }

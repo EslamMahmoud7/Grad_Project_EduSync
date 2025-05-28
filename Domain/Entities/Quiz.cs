@@ -18,9 +18,7 @@ namespace Domain.Entities
         public int CourseId { get; set; }
         public Course Course { get; set; }
 
-        public int StudentProfileId { get; set; }
-        public StudentProfile StudentProfile { get; set; }
-
+        public string StudentProfileId { get; set; }
         public string CreatedByAdminId { get; set; }
         public User CreatedByAdmin { get; set; }
     }

@@ -1,75 +1,46 @@
-﻿using Domain.DTOs;
-using Domain.Entities;
+﻿// Infrastructure/Services/ProfileService.cs
+
+using Domain.DTOs;
 using Domain.Interfaces.IServices;
-using Domain.Interfaces.Repositories;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Infrastructure.Services
 {
     public class ProfileService : IProfileService
     {
         private readonly MainDbContext _db;
-
-        public ProfileService(MainDbContext db)
-        {
-            _db = db;
-        }
+        public ProfileService(MainDbContext db) => _db = db;
 
         public async Task<ProfileDTO> GetProfileById(string userId)
         {
-            var user = await _db.Users
-                .Include(u => u.StudentProfile)
-                .Include(u => u.AdminProfile)
-                .FirstOrDefaultAsync(u => u.Id == userId);
+            var u = await _db.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == userId);
 
-            if (user == null)
-                throw new ArgumentException("User not found");
+            if (u == null)
+                throw new ArgumentException($"No user found with ID '{userId}'");
 
-            if (user.Role == UserRole.Student)
+            return new ProfileDTO
             {
-                var student = user.StudentProfile;
-                return new ProfileDTO
-                {
-                    Id = user.Id,
-                    FullName = user.UserName,
-                    Role = "Student",
-                    Email = user.Email,
-                    Phone = user.PhoneNumber,
-                    JoinedDate = student.JoinedDate.ToShortDateString(),
-                    Institution = student.Institution,
-                    GPA = student.GPA,
-                    Status = student.Status,
-                    AvatarUrl = student.AvatarUrl,
-                    TotalCourses = student.TotalCourses,
-                    Achievements = new List<string>(),
-                    RecentActivity = new List<string>(),
-                    SocialLinks = new List<string>()
-                };
-            }
-            else if (user.Role == UserRole.Admin)
-            {
-                var admin = user.AdminProfile;
-                return new ProfileDTO
-                {
-                    Id = user.Id,
-                    FullName = user.UserName,
-                    Role = "Admin",
-                    Email = user.Email,
-                    Phone = user.PhoneNumber,
-                    JoinedDate = user.CreatedAt.ToShortDateString(),
-                    Institution = admin.Department,
-                    GPA = 0,
-                    Status = "N/A",
-                    AvatarUrl = admin.AvatarUrl,
-                    TotalCourses = 0,
-                    Achievements = new List<string>(),
-                    RecentActivity = new List<string>(),
-                    SocialLinks = new List<string>()
-                };
-            }
-
-            throw new Exception("Unknown role");
+                Id = u.Id,
+                FullName = $"{u.FirstName} {u.LastName}",
+                Role = u.Role,
+                Email = u.Email!,
+                Phone = u.PhoneNumber!,
+                JoinedDate = u.JoinedDate.ToShortDateString(),
+                Institution = u.Institution!,
+                TotalCourses = u.TotalCourses,
+                GPA = u.GPA,
+                Status = u.Status!,
+                AvatarUrl = u.AvatarUrl!,
+                Achievements = new List<string>(),
+                RecentActivity = new List<string>(),
+                SocialLinks = new List<string>()
+            };
         }
     }
 }

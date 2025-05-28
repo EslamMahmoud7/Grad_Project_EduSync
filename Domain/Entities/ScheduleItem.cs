@@ -16,8 +16,7 @@ namespace Domain.Entities
         public string Room { get; set; }
         public string DoctorEmail { get; set; }
 
-        public int StudentProfileId { get; set; }
-        public StudentProfile StudentProfile { get; set; }
+        public string StudentProfileId { get; set; }
     }
 
 }

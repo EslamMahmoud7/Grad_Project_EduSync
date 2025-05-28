@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(MainDbContext))]
-    [Migration("20250528015926_InitMig")]
-    partial class InitMig
+    [Migration("20250528120203_initmig")]
+    partial class initmig
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,79 +25,9 @@ namespace Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Domain.Entities.AcademicRecord", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("CourseCode")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Credits")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Grade")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Instructor")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("StudentProfileId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("StudentProfileId1")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Term")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("StudentProfileId1");
-
-                    b.ToTable("AcademicRecord");
-                });
-
-            modelBuilder.Entity("Domain.Entities.AdminProfile", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("AvatarUrl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Department")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("AdminProfiles");
-                });
-
             modelBuilder.Entity("Domain.Entities.Announcement", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("AdminProfileId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedAt")
@@ -116,8 +46,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AdminProfileId");
 
                     b.HasIndex("CreatedByAdminId");
 
@@ -148,11 +76,9 @@ namespace Infrastructure.Migrations
                     b.Property<byte>("Status")
                         .HasColumnType("tinyint");
 
-                    b.Property<int>("StudentProfileId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("StudentProfileId1")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<string>("StudentId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("SubmissionDate")
                         .HasColumnType("datetime2");
@@ -166,8 +92,6 @@ namespace Infrastructure.Migrations
                     b.HasIndex("CourseId1");
 
                     b.HasIndex("CreatedByAdminId");
-
-                    b.HasIndex("StudentProfileId1");
 
                     b.ToTable("Assignments");
                 });
@@ -304,9 +228,6 @@ namespace Infrastructure.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("AdminProfileId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -329,8 +250,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AdminProfileId");
 
                     b.HasIndex("UserId");
 
@@ -362,11 +281,9 @@ namespace Infrastructure.Migrations
                     b.Property<byte>("Status")
                         .HasColumnType("tinyint");
 
-                    b.Property<int>("StudentProfileId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("StudentProfileId1")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<string>("StudentProfileId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("SubmissionDate")
                         .HasColumnType("datetime2");
@@ -380,8 +297,6 @@ namespace Infrastructure.Migrations
                     b.HasIndex("CourseId1");
 
                     b.HasIndex("CreatedByAdminId");
-
-                    b.HasIndex("StudentProfileId1");
 
                     b.ToTable("Quizzes");
                 });
@@ -406,11 +321,9 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("StudentProfileId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("StudentProfileId1")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<string>("StudentProfileId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Subject")
                         .IsRequired()
@@ -422,47 +335,7 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("StudentProfileId1");
-
                     b.ToTable("ScheduleItems");
-                });
-
-            modelBuilder.Entity("Domain.Entities.StudentProfile", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("AvatarUrl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<double>("GPA")
-                        .HasColumnType("float");
-
-                    b.Property<string>("Institution")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("JoinedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("TotalCourses")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("StudentProfiles");
                 });
 
             modelBuilder.Entity("Domain.Entities.User", b =>
@@ -473,12 +346,12 @@ namespace Infrastructure.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
+                    b.Property<string>("AvatarUrl")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -486,6 +359,21 @@ namespace Infrastructure.Migrations
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
+
+                    b.Property<string>("FirstName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("GPA")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Institution")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("JoinedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastName")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -516,11 +404,16 @@ namespace Infrastructure.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Status")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TotalCourses")
+                        .HasColumnType("int");
+
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
 
                     b.Property<string>("UserName")
-                        .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
@@ -670,34 +563,8 @@ namespace Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Domain.Entities.AcademicRecord", b =>
-                {
-                    b.HasOne("Domain.Entities.StudentProfile", "StudentProfile")
-                        .WithMany("AcademicRecords")
-                        .HasForeignKey("StudentProfileId1")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("StudentProfile");
-                });
-
-            modelBuilder.Entity("Domain.Entities.AdminProfile", b =>
-                {
-                    b.HasOne("Domain.Entities.User", "User")
-                        .WithOne("AdminProfile")
-                        .HasForeignKey("Domain.Entities.AdminProfile", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Domain.Entities.Announcement", b =>
                 {
-                    b.HasOne("Domain.Entities.AdminProfile", null)
-                        .WithMany("Announcements")
-                        .HasForeignKey("AdminProfileId");
-
                     b.HasOne("Domain.Entities.User", "CreatedByAdmin")
                         .WithMany()
                         .HasForeignKey("CreatedByAdminId")
@@ -719,15 +586,9 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Domain.Entities.StudentProfile", "StudentProfile")
-                        .WithMany("Assignments")
-                        .HasForeignKey("StudentProfileId1");
-
                     b.Navigation("Course");
 
                     b.Navigation("CreatedByAdmin");
-
-                    b.Navigation("StudentProfile");
                 });
 
             modelBuilder.Entity("Domain.Entities.Lecture", b =>
@@ -754,10 +615,6 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.Notification", b =>
                 {
-                    b.HasOne("Domain.Entities.AdminProfile", null)
-                        .WithMany("Notifications")
-                        .HasForeignKey("AdminProfileId");
-
                     b.HasOne("Domain.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -781,35 +638,9 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Domain.Entities.StudentProfile", "StudentProfile")
-                        .WithMany("Quizzes")
-                        .HasForeignKey("StudentProfileId1");
-
                     b.Navigation("Course");
 
                     b.Navigation("CreatedByAdmin");
-
-                    b.Navigation("StudentProfile");
-                });
-
-            modelBuilder.Entity("Domain.Entities.ScheduleItem", b =>
-                {
-                    b.HasOne("Domain.Entities.StudentProfile", "StudentProfile")
-                        .WithMany("Schedule")
-                        .HasForeignKey("StudentProfileId1");
-
-                    b.Navigation("StudentProfile");
-                });
-
-            modelBuilder.Entity("Domain.Entities.StudentProfile", b =>
-                {
-                    b.HasOne("Domain.Entities.User", "User")
-                        .WithOne("StudentProfile")
-                        .HasForeignKey("Domain.Entities.StudentProfile", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -863,13 +694,6 @@ namespace Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Domain.Entities.AdminProfile", b =>
-                {
-                    b.Navigation("Announcements");
-
-                    b.Navigation("Notifications");
-                });
-
             modelBuilder.Entity("Domain.Entities.Course", b =>
                 {
                     b.Navigation("Assignments");
@@ -877,26 +701,6 @@ namespace Infrastructure.Migrations
                     b.Navigation("Materials");
 
                     b.Navigation("Quizzes");
-                });
-
-            modelBuilder.Entity("Domain.Entities.StudentProfile", b =>
-                {
-                    b.Navigation("AcademicRecords");
-
-                    b.Navigation("Assignments");
-
-                    b.Navigation("Quizzes");
-
-                    b.Navigation("Schedule");
-                });
-
-            modelBuilder.Entity("Domain.Entities.User", b =>
-                {
-                    b.Navigation("AdminProfile")
-                        .IsRequired();
-
-                    b.Navigation("StudentProfile")
-                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }
