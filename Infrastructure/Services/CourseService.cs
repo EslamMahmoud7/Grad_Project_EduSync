@@ -3,90 +3,97 @@ using Domain.Entities;
 using Domain.Interfaces;
 using Domain.Interfaces.IServices;
 using Domain.Interfaces.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 
 namespace Infrastructure.Services
 {
     public class CourseService : ICourseService
     {
-        private readonly IGenericRepository<Course> _courseGenericRepo;
+        private readonly IGenericRepository<Course> _courseRepo;
         private readonly IPaginationService _paginationService;
 
-        public CourseService(IGenericRepository<Course> CourseGenericRepo, IPaginationService paginationService)
+        public CourseService(IGenericRepository<Course> courseRepo, IPaginationService paginationService)
         {
-            _courseGenericRepo = CourseGenericRepo;
+            _courseRepo = courseRepo;
             _paginationService = paginationService;
         }
-        public async Task<CourseDTO> Add(CourseDTO courseDTO)
+
+        public async Task<CourseDto> Add(CourseDto dto)
         {
-            var Course = new Course()
+            var course = new Course
             {
-                CourseId = courseDTO.CourseId,
-                CourseName = courseDTO.CourseName,
-                CourseDescription = courseDTO.CourseDescription,
-                CourseProgress = courseDTO.CourseProgress,
-                CourseTitle = courseDTO.CourseTitle,
-                CreatedAt = DateTime.Now,
-                CreatedBy = "super admin"
+                Id = Guid.NewGuid().ToString(),
+                Code = dto.Code,
+                Title = dto.Title,
+                Description = dto.Description,
+                InstructorName = dto.InstructorName,
+                InstructorEmail = dto.InstructorEmail,
+                ResourceLink = dto.ResourceLink,
+                Credits = dto.Credits,
+                Progress = dto.Progress,
+                NextDeadline = dto.NextDeadline,
             };
-            await _courseGenericRepo.Add(Course);
-            return MapToCourseDTO(Course);
+
+            await _courseRepo.Add(course);
+            return MapToDto(course);
         }
-        public async Task Delete(int id)
+
+        public async Task Delete(string id)
         {
-            var Course = await _courseGenericRepo.GetById(id);
-            if (Course == null) throw new ArgumentException("course not exist");
-            await _courseGenericRepo.Delete(Course);
+            var course = await _courseRepo.GetById(id);
+            if (course == null) throw new ArgumentException("Course not found");
+
+            await _courseRepo.Delete(course);
         }
-        public async Task<CourseDTO> Get(int id)
+
+        public async Task<CourseDto> Get(string id)
         {
-            var Course = await _courseGenericRepo.GetById(id);
-            if (Course == null) throw new ArgumentException("Course is null");
-            return MapToCourseDTO(Course);
+            var course = await _courseRepo.GetById(id);
+            if (course == null) throw new ArgumentException("Course not found");
+
+            return MapToDto(course);
         }
-        public async Task<IReadOnlyList<CourseDTO>> GetAll()
+
+        public async Task<IReadOnlyList<CourseDto>> GetAll()
         {
-            var Courses = await _courseGenericRepo.GetAll();
-            return Courses.Select(MapToCourseDTO).ToList();
+            var courses = await _courseRepo.GetAll();
+            return courses.Select(MapToDto).ToList();
         }
-        public async Task<CourseDTO> Update(CourseDTO courseDTO)
+
+        public async Task<CourseDto> Update(CourseDto dto)
         {
-            var Course = await _courseGenericRepo.GetById(courseDTO.CourseId);
-            if (Course == null) throw new ArgumentException("course is null");
-            Course.CourseId = courseDTO.CourseId;
-            Course.CourseName = courseDTO.CourseName;
-            Course.CourseDescription = courseDTO.CourseDescription;
-            Course.CourseTitle = courseDTO.CourseTitle;
-            Course.CreatedAt = DateTime.Now;
-            Course.CreatedBy = "Super admin";
-            await _courseGenericRepo.Update(Course);
-            return MapToCourseDTO(Course);
+            var course = await _courseRepo.GetById(dto.Id);
+            if (course == null) throw new ArgumentException("Course not found");
+
+            course.Code = dto.Code;
+            course.Title = dto.Title;
+            course.Description = dto.Description;
+            course.InstructorName = dto.InstructorName;
+            course.InstructorEmail = dto.InstructorEmail;
+            course.ResourceLink = dto.ResourceLink;
+            course.Credits = dto.Credits;
+            course.Progress = dto.Progress;
+            course.NextDeadline = dto.NextDeadline;
+
+            await _courseRepo.Update(course);
+            return MapToDto(course);
         }
-        public CourseDTO MapToCourseDTO(Course course)
+
+        private CourseDto MapToDto(Course course)
         {
-            return new CourseDTO()
+            return new CourseDto
             {
-                CourseId = course.CourseId,
-                CourseName = course.CourseName,
-                CourseDescription = course.CourseDescription,
-                CourseProgress = course.CourseProgress,
-                CourseTitle = course.CourseTitle
+                Id = course.Id,
+                Code = course.Code,
+                Title = course.Title,
+                Description = course.Description,
+                InstructorName = course.InstructorName,
+                InstructorEmail = course.InstructorEmail,
+                ResourceLink = course.ResourceLink,
+                Credits = course.Credits,
+                Progress = course.Progress,
+                NextDeadline = course.NextDeadline
             };
-        }
-
-        public async Task<PaginatedResultDTO<CourseDTO>> GetAllPaginated(int pagenumber = 1, int pagesize = 3)
-        {
-            var Courses = await _courseGenericRepo.GetAll();
-            var IQuerableCoursed = Courses.AsQueryable();
-
-            var CourseDTO = IQuerableCoursed.Select(c => MapToCourseDTO(c)).ToList().AsQueryable();
-
-            var PaginatedResult = _paginationService.Paginate(CourseDTO, pagenumber, pagesize);
-            return PaginatedResult;
         }
     }
 }

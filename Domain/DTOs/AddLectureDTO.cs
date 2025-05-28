@@ -8,7 +8,7 @@ namespace Domain.DTOs
 {
     public class AddLectureDTO
     {
-        public int Id { get; set; }
+        public string Id { get; set; }
         public string Title { get; set; }
         public DateTime Duration { get; set; }
         public string Feedback { get; set; }

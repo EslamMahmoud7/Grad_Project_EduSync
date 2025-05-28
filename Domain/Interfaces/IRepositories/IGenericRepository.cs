@@ -12,6 +12,6 @@ namespace Domain.Interfaces.Repositories
         Task Update(T entity);
         Task Delete(T entity);
         Task<IReadOnlyList<T>> GetAll();
-        Task<T> GetById(int id);
+        Task<T> GetById(string id);
     }
 }

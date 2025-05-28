@@ -17,15 +17,15 @@ namespace Infrastructure.Services.AccountService
 {
     public class AccountService : IAccountService
     {
-        private readonly SignInManager<Student> _signInManager;
-        private readonly UserManager<Student> _userManager;
+        private readonly SignInManager<User> _signInManager;
+        private readonly UserManager<User> _userManager;
         private readonly ILogger<AccountService> _logger;
         private readonly ITokenService _tokenService;
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
 
-        public AccountService(SignInManager<Student> signInManager,
-            UserManager<Student> userManager,
+        public AccountService(SignInManager<User> signInManager,
+            UserManager<User> userManager,
             ILogger<AccountService> logger,
             ITokenService tokenService,
             IEmailService emailService,
@@ -103,27 +103,26 @@ namespace Infrastructure.Services.AccountService
         {
             RegistrationVaildation.RegisterVaildation(registerationDTO);
 
-            if (await _userManager.FindByEmailAsync(registerationDTO.email) != null)
+            if (await _userManager.FindByEmailAsync(registerationDTO.Email) != null)
                 _logger.LogError("email already exist");
 
-            var Student = new Student()
+            var Student = new User()
             {
                 FirstName = registerationDTO.FirstName,
                 LastName = registerationDTO.LastName,
-                Email = registerationDTO.email,
-                FirstLogin = DateTime.Now,
-                UserName = registerationDTO.email.Split('@')[0]
+                Email = registerationDTO.Email,
+                UserName = registerationDTO.Email.Split('@')[0]
             };
 
-            var result = await _userManager.CreateAsync(Student, registerationDTO.password);
+            var result = await _userManager.CreateAsync(Student, registerationDTO.Password);
             if (!result.Succeeded) result.Errors.Select(error => error.Description);
 
             return new UserDTO()
             {
                 FirstName = registerationDTO.FirstName,
                 LastName = registerationDTO.LastName,
-                Email = registerationDTO.email,
-                Password = registerationDTO.password,
+                Email = registerationDTO.Email,
+                Password = registerationDTO.Password,
                 Token = await _tokenService.GenerateJWTToken(Student)
             };
         }

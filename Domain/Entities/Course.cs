@@ -8,13 +8,19 @@ namespace Domain.Entities
 {
     public class Course
     {
-        public int CourseId { get; set; }
-        public string CourseName { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public string CourseDescription { get; set; }
-        public string CreatedBy { get; set; }
-        public string CourseTitle { get; set; }
-        public string CourseProgress { get; set; }
+        public string Id { get; set; }
+        public string Code { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public int Credits { get; set; }
+        public string InstructorName { get; set; }
+        public string InstructorEmail { get; set; }
+        public string ResourceLink { get; set; }
+        public int Progress { get; set; }
+        public DateTime NextDeadline { get; set; }
 
+        public ICollection<Assignment> Assignments { get; set; }
+        public ICollection<Quiz> Quizzes { get; set; }
+        public ICollection<Material> Materials { get; set; }
     }
 }

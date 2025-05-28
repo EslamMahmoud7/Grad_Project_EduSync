@@ -6,7 +6,16 @@ using System.Threading.Tasks;
 
 namespace Domain.Entities
 {
-    class Material
+    public class Material
     {
+        public string Id { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public string FileUrl { get; set; }
+        public DateTime UploadDate { get; set; }
+
+        public int CourseId { get; set; }
+        public Course Course { get; set; }
     }
+
 }

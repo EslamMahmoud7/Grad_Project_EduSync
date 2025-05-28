@@ -39,8 +39,6 @@ namespace Infrastructure
             services.AddScoped<ITokenService, GenerateToken>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IAccountService, AccountService>();
-            services.AddScoped<ICourseService, CourseService>();
-            services.AddScoped<ILectureService, LectureService>();
             services.AddScoped<IGenericRepository<Course>, GenericRepository<Course>>();
             services.AddScoped<IGenericRepository<Lecture>, GenericRepository<Lecture>>();
 
@@ -73,15 +71,14 @@ namespace Infrastructure
 
         public static IServiceCollection DatabaseContexts(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddDbContext<MainDBContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("Infrastructure")));
-            services.AddDbContext<IdentityContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("IdentityConnection")));
+            services.AddDbContext<MainDbContext>(options =>
+                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"),
+                    b => b.MigrationsAssembly("Infrastructure")));
             return services;
         }
         public static IServiceCollection IdentityConfiguration(this IServiceCollection services)
         {
-            services.AddIdentity<Student, IdentityRole>(option =>
+            services.AddIdentity<User, IdentityRole>(option =>
             {
                 option.Tokens.PasswordResetTokenProvider = TokenOptions.DefaultProvider;
                 option.Password.RequiredUniqueChars = 2;
@@ -91,7 +88,7 @@ namespace Infrastructure
                 option.Password.RequiredUniqueChars = 0;
                 option.Password.RequireLowercase = false;
                 option.Password.RequireUppercase = false;
-            }).AddEntityFrameworkStores<IdentityContext>().AddDefaultTokenProviders();
+            }).AddEntityFrameworkStores<MainDbContext>().AddDefaultTokenProviders();
             return services;
         }
     }

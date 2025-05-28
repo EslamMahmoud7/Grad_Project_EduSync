@@ -16,14 +16,15 @@ namespace Infrastructure.Services.TokenService
         {
             _configuration = configuration;
         }
-        public async Task<string> GenerateJWTToken(Student student)
+        public async Task<string> GenerateJWTToken(User user)
         {
-            var PrivateClaims = new List<Claim>()
-            {
-                new Claim (ClaimTypes.Name, student.FirstName),
-                //new Claim (ClaimTypes.Email, student.Email),
-                //new Claim ("Id", student.Id.ToString()),
-            };
+            var claims = new List<Claim>
+    {
+        new Claim(ClaimTypes.NameIdentifier, user.Id),
+        new Claim(ClaimTypes.Email, user.Email),
+        new Claim(ClaimTypes.Role, user.Role.ToString()),
+        new Claim("FullName", $"{user.FirstName} {user.LastName}")
+    };
 
             var AuthKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWTToken:AuthKey"] ?? "auth key null"));
 
@@ -33,7 +34,7 @@ namespace Infrastructure.Services.TokenService
                         audience: _configuration["JWTToken:ValidAudience"],
                         issuer: _configuration["JWTToken:ValidIssuer"],
                         expires: DateTime.Now.AddMinutes(double.Parse(_configuration["JWTToken:DurationInMinutes"] ?? "expire is null days")),
-                        claims: PrivateClaims,
+                        claims: claims,
                         signingCredentials: Credentials
                 );
             return new JwtSecurityTokenHandler().WriteToken(Token);

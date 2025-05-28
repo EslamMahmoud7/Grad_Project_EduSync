@@ -12,8 +12,8 @@ namespace Grad_Project_LMS.Controller
     [ApiController]
     public class StudentAccountController : ControllerBase
     {
-        private readonly UserManager<Student> _userManager;
-        private readonly SignInManager<Student> _signInManager;
+        private readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> _signInManager;
         private readonly ITokenService _tokenService;
         private readonly IConfiguration _configuration;
         private readonly IEmailService _emailService;
@@ -22,8 +22,8 @@ namespace Grad_Project_LMS.Controller
 
         public StudentAccountController
             (
-            UserManager<Student> userManager,
-            SignInManager<Student> signInManager,
+            UserManager<User> userManager,
+            SignInManager<User> signInManager,
             ITokenService tokenService,
             IConfiguration configuration,
             IEmailService emailService,

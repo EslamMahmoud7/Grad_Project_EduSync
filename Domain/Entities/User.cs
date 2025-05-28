@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Identity;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -7,16 +8,16 @@ using System.Threading.Tasks;
 
 namespace Domain.Entities
 {
-    public class User
+    public class User : IdentityUser
     {
-        public required string FirstName { get; set; }
-        public required string LastName { get; set; }
-        public required string PhoneNumber { get; set; }
-        public string Address { get; set; } = string.Empty;
-        public required string NationalID { get; set; }
-        public required string ProfileImage { get; set; } = string.Empty; 
-        public DateTime EnrollmentDate { get; set; } = DateTime.Now;
-        public DateTime LastLoginDate { get; set; } = DateTime.Now;
-        public DateTime FirstLogin { get; set; } = DateTime.Now;
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+
+        public UserRole Role { get; set; }
+        public StudentProfile StudentProfile { get; set; }
+        public AdminProfile AdminProfile { get; set; }
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
+
 }

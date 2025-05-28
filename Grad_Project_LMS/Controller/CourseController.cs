@@ -1,13 +1,11 @@
 ﻿using Domain.DTOs;
 using Domain.Interfaces.IServices;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Reflection.Metadata.Ecma335;
 
 namespace Grad_Project_LMS.Controller
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class CourseController : ControllerBase
     {
         private readonly ICourseService _courseService;
@@ -18,109 +16,39 @@ namespace Grad_Project_LMS.Controller
         }
 
         [HttpPost]
-        public async Task<ActionResult<CourseDTO>> AddCourse([FromBody]CourseDTO courseDTO)
+        public async Task<ActionResult<CourseDto>> AddCourse([FromBody] CourseDto dto)
         {
-            try
-            {
-                if (!ModelState.IsValid) return BadRequest("model state is invalid") ;
-                var result = await _courseService.Add(courseDTO);
-                return Ok(result);
-            }
-            catch (ArgumentException aex)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
-        }
-        [HttpPut("UpdateCourse")]
-        public async Task<ActionResult<CourseDTO>> UpdateCourse([FromBody]CourseDTO courseDTO)
-        {
-            try
-            {
-                var result = await _courseService.Update(courseDTO);
-                return Ok(result);
-            }
-            catch (ArgumentException aex)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
-        }
-        [HttpDelete("{id:int}")]
-        public async Task<ActionResult> DeleteCourse(int id)
-        {
-            try
-            {
-                await _courseService.Delete(id);
-                return NoContent();
-            }
-            catch (ArgumentException aex)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
-        }
-        [HttpGet("GetAllCourses")]
-        public async Task<ActionResult<IReadOnlyList<CourseDTO>>> GetAllCourses()
-        {
-            try
-            {
-                var AllCourses = await _courseService.GetAll();
-                return Ok(AllCourses);
-            }
-            catch (ArgumentException aex)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            var result = await _courseService.Add(dto);
+            return Ok(result);
         }
 
-        [HttpGet("GetAllPaginatedCourses")]
-        public async Task<ActionResult<PaginatedResultDTO<CourseDTO>>> GetAllPaginatedCourses([FromQuery] int PageNumber = 1, [FromQuery] int PageSize = 3)
+        [HttpPut]
+        public async Task<ActionResult<CourseDto>> UpdateCourse([FromBody] CourseDto dto)
         {
-            try
-            {
-                var PaginatedCourses = await _courseService.GetAllPaginated(PageNumber, PageSize);
-                return Ok(PaginatedCourses);
-            }
-            catch (ArgumentException aex)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
+            var result = await _courseService.Update(dto);
+            return Ok(result);
         }
 
-       [HttpGet("{id:int}")]
-        public async Task<ActionResult<CourseDTO>> GetById(int id)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteCourse(string id)
         {
-            try
-            {
-                var Courese = await _courseService.Get(id);
-                return Ok(Courese);
-            }
-            catch (ArgumentException aex)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
+            await _courseService.Delete(id);
+            return NoContent();
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<CourseDto>> GetCourse(string id)
+        {
+            var result = await _courseService.Get(id);
+            return Ok(result);
+        }
+
+        [HttpGet("all")]
+        public async Task<ActionResult<IReadOnlyList<CourseDto>>> GetAllCourses()
+        {
+            var result = await _courseService.GetAll();
+            return Ok(result);
         }
     }
 }

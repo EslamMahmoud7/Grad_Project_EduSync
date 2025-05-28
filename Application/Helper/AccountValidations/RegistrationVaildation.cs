@@ -11,15 +11,15 @@ namespace Application.Helper.AccountValidations
     {
         public static void RegisterVaildation(RegisterationDTO registerationDTO)
         {
-            if (string.IsNullOrWhiteSpace(registerationDTO.email))
+            if (string.IsNullOrWhiteSpace(registerationDTO.Email))
                 throw new ArgumentException("Email required");
-            if (string.IsNullOrWhiteSpace(registerationDTO.password))
+            if (string.IsNullOrWhiteSpace(registerationDTO.Password))
                 throw new ArgumentException("password required");
             if (string.IsNullOrWhiteSpace(registerationDTO.FirstName))
                 throw new ArgumentException("FirstName required");
             if (string.IsNullOrWhiteSpace(registerationDTO.LastName))
-                throw new ArgumentException("LastName required");
-            if (string.IsNullOrWhiteSpace(registerationDTO.phonenumber))
+                throw new ArgumentException("FirstName required");
+            if (string.IsNullOrWhiteSpace(registerationDTO.PhoneNumber))
                 throw new ArgumentException("phonenumber required");
         }
     }

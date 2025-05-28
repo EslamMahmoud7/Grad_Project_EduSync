@@ -1,0 +1,13 @@
+﻿using Domain.DTOs;
+
+namespace Domain.Interfaces.IServices
+{
+    public interface ICourseService
+    {
+        Task<CourseDto> Add(CourseDto courseDTO);
+        Task<CourseDto> Update(CourseDto courseDTO);
+        Task Delete(string id);
+        Task<CourseDto> Get(string id);
+        Task<IReadOnlyList<CourseDto>> GetAll();
+    }
+}

@@ -6,16 +6,16 @@ using System.Threading.Tasks;
 
 namespace Domain.Entities
 {
-    public class Notification
+    public class Announcement
     {
         public string Id { get; set; }
+
         public string Title { get; set; }
         public string Message { get; set; }
         public DateTime CreatedAt { get; set; }
-        public bool Read { get; set; }
-        public NotificationType Type { get; set; }
 
-        public string UserId { get; set; }
-        public User User { get; set; }
+        public string CreatedByAdminId { get; set; }
+        public User CreatedByAdmin { get; set; }
     }
+
 }

@@ -12,8 +12,8 @@ namespace Infrastructure.Repositories
 {
     public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
-        private readonly MainDBContext _dBContext;
-        public GenericRepository(MainDBContext dBContext)
+        private readonly MainDbContext _dBContext;
+        public GenericRepository(MainDbContext dBContext)
             => _dBContext = dBContext;
         public async Task Add(T entity)
         {
@@ -38,7 +38,7 @@ namespace Infrastructure.Repositories
         }
               
 
-        public async Task<T> GetById(int id)
+        public async Task<T> GetById(string id)
         {
             if (typeof(T) == typeof(Lecture))
             {
@@ -54,9 +54,5 @@ namespace Infrastructure.Repositories
              _dBContext.Set<T>().Update(entity);
              _dBContext.SaveChanges();
         }
-           
-
-
-        
     }
 }
