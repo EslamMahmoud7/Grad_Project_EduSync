@@ -41,33 +41,64 @@ namespace Infrastructure
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IGenericRepository<Course>, GenericRepository<Course>>();
             services.AddScoped<IGenericRepository<Lecture>, GenericRepository<Lecture>>();
+            services.AddScoped<ICourseService, CourseService>();
             services.AddScoped<IProfileService, ProfileService>();
             services.AddScoped<IPaginationService, PaginationService>();
             return services;
         }
         public static IServiceCollection JWTTokenConfiguration(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddAuthentication().AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
-            {
-                options.TokenValidationParameters = new TokenValidationParameters
+            services
+                .AddAuthentication(options =>
                 {
-                    ValidateAudience = true,
-                    ValidAudience = configuration["JWTToken:ValidAudience"],
+                    // THIS IS CRUCIAL - Set default schemes
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidIssuer = configuration["JWTToken:ValidIssuer"],
+                        ValidateAudience = true,
+                        ValidAudience = configuration["JWTToken:ValidAudience"],
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(configuration["JWTToken:AuthKey"]!)
+                        ),
+                        ValidateLifetime = true,
+                        ClockSkew = TimeSpan.Zero,
+                        NameClaimType = ClaimTypes.NameIdentifier,
+                        RoleClaimType = ClaimTypes.Role,
+                    };
 
-                    ValidateIssuer = true,
-                    ValidIssuer = configuration["JWTToken:ValidIssuer"],
+                    // Add events for debugging
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnAuthenticationFailed = context =>
+                        {
+                            Console.WriteLine($"Authentication failed: {context.Exception.Message}");
+                            return Task.CompletedTask;
+                        },
+                        OnTokenValidated = context =>
+                        {
+                            Console.WriteLine($"Token validated for: {context.Principal?.Identity?.Name}");
+                            return Task.CompletedTask;
+                        },
+                        OnChallenge = context =>
+                        {
+                            Console.WriteLine($"Challenge triggered: {context.Error}, {context.ErrorDescription}");
+                            return Task.CompletedTask;
+                        }
+                    };
+                });
 
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWTToken:AuthKey"] ?? string.Empty)),
-
-                    ValidateLifetime = true,
-                    ClockSkew = TimeSpan.Zero,
-
-                    RoleClaimType = ClaimTypes.Role,
-                };
-            });
+            services.AddAuthorization();
             return services;
         }
+
 
         public static IServiceCollection DatabaseContexts(this IServiceCollection services, IConfiguration configuration)
         {

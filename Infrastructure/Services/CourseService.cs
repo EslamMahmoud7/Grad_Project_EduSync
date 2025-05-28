@@ -32,6 +32,7 @@ namespace Infrastructure.Services
                 Credits = dto.Credits,
                 Progress = dto.Progress,
                 NextDeadline = dto.NextDeadline,
+                Level = dto.Level
             };
 
             await _courseRepo.Add(course);
@@ -60,9 +61,9 @@ namespace Infrastructure.Services
             return courses.Select(MapToDto).ToList();
         }
 
-        public async Task<CourseDto> Update(CourseDto dto)
+        public async Task<CourseDto> Update(CourseDto dto, string CourseID)
         {
-            var course = await _courseRepo.GetById(dto.Id);
+            var course = await _courseRepo.GetById(CourseID);
             if (course == null) throw new ArgumentException("Course not found");
 
             course.Code = dto.Code;
@@ -74,7 +75,7 @@ namespace Infrastructure.Services
             course.Credits = dto.Credits;
             course.Progress = dto.Progress;
             course.NextDeadline = dto.NextDeadline;
-
+            course.Level = dto.Level;
             await _courseRepo.Update(course);
             return MapToDto(course);
         }
@@ -83,7 +84,6 @@ namespace Infrastructure.Services
         {
             return new CourseDto
             {
-                Id = course.Id,
                 Code = course.Code,
                 Title = course.Title,
                 Description = course.Description,
@@ -92,6 +92,7 @@ namespace Infrastructure.Services
                 ResourceLink = course.ResourceLink,
                 Credits = course.Credits,
                 Progress = course.Progress,
+                Level = course.Level,
                 NextDeadline = course.NextDeadline
             };
         }

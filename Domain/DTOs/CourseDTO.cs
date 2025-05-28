@@ -9,7 +9,6 @@ namespace Domain.DTOs
 {
     public class CourseDto
     {
-        public string Id { get; set; }
         public string Code { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
@@ -18,6 +17,7 @@ namespace Domain.DTOs
         public string ResourceLink { get; set; }
         public int Credits { get; set; }
         public int Progress { get; set; }
+        public int Level { get; set; } = 0;
         public DateTime NextDeadline { get; set; }
     }
 }

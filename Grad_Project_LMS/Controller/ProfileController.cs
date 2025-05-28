@@ -1,41 +1,41 @@
-﻿using Domain.DTOs;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Domain.DTOs;
+using Domain.Entities;
 using Domain.Interfaces.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Grad_Project_LMS.Controllers
+[ApiController]
+[Route("api/[controller]")]
+public class ProfileController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
+    private readonly IProfileService _profileService;
 
-    public class ProfileController : ControllerBase
+    public ProfileController(IProfileService profileService)
     {
-        private readonly IProfileService _profileService;
+        _profileService = profileService;
+    }
 
-        public ProfileController(IProfileService profileService)
+    // GET /api/profile
+    [HttpGet("{userId}")]
+    public async Task<ActionResult<ProfileDTO>> GetProfile(string userId)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+            return Unauthorized();
+
+        try
         {
-            _profileService = profileService;
+            var dto = await _profileService.GetProfileById(userId);
+            return Ok(dto);
         }
-
-        [HttpGet("{userId}")]
-        public async Task<ActionResult<ProfileDTO>> GetProfile(string userId)
+        catch (ArgumentException)
         {
-            if (string.IsNullOrWhiteSpace(userId))
-                return BadRequest("userId is required");
-
-            try
-            {
-                var dto = await _profileService.GetProfileById(userId);
-                return Ok(dto);
-            }
-            catch (ArgumentException)
-            {
-                return NotFound($"No profile found for user {userId}");
-            }
-            catch
-            {
-                return StatusCode(500, "An unexpected error occurred.");
-            }
+            return NotFound($"No profile found for user {userId}");
+        }
+        catch
+        {
+            return StatusCode(500, "An unexpected error occurred.");
         }
     }
 }

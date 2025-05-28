@@ -1,5 +1,6 @@
 ﻿using Domain.DTOs;
 using Domain.Interfaces.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Grad_Project_LMS.Controller
@@ -24,9 +25,9 @@ namespace Grad_Project_LMS.Controller
         }
 
         [HttpPut]
-        public async Task<ActionResult<CourseDto>> UpdateCourse([FromBody] CourseDto dto)
+        public async Task<ActionResult<CourseDto>> UpdateCourse([FromBody] CourseDto dto, string CourseId)
         {
-            var result = await _courseService.Update(dto);
+            var result = await _courseService.Update(dto, CourseId);
             return Ok(result);
         }
 

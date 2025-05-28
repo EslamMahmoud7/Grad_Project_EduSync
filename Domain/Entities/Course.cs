@@ -18,7 +18,7 @@ namespace Domain.Entities
         public string ResourceLink { get; set; }
         public int Progress { get; set; }
         public DateTime NextDeadline { get; set; }
-
+        public int Level { get; set; } = 0;
         public ICollection<Assignment> Assignments { get; set; }
         public ICollection<Quiz> Quizzes { get; set; }
         public ICollection<Material> Materials { get; set; }
