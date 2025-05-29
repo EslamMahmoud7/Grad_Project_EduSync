@@ -8,18 +8,11 @@ namespace Domain.Entities
 {
     public class Lecture
     {
-        public string Id { get; set; }
-        public string Title { get; set; }
-        public DateTime Duration { get; set; }
-        public string Feedback { get; set; }
-        public Course Course  { get; set; }
-        public int CourseId { get; set; }
-
-        public string Type { get; set; }
-        public DateTime  Time { get; set; }
-        public string Video { get; set; }
-        public string Location { get; set; }
-        public string Description { get; set; }
-
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public DateTime Date { get; set; }
+        public string Topic { get; set; } = default!;
+        public string InstructorName { get; set; } = default!;
+        public string CourseId { get; set; } = default!;
+        public Course Course { get; set; } = default!;
     }
 }

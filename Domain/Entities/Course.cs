@@ -15,12 +15,14 @@ namespace Domain.Entities
         public int Credits { get; set; }
         public string InstructorName { get; set; }
         public string InstructorEmail { get; set; }
-        public string ResourceLink { get; set; }
+        public string ResourceLink { get; set; } = string.Empty;
         public int Progress { get; set; }
         public DateTime NextDeadline { get; set; }
         public int Level { get; set; } = 0;
-        public ICollection<Assignment> Assignments { get; set; }
-        public ICollection<Quiz> Quizzes { get; set; }
-        public ICollection<Material> Materials { get; set; }
+        public ICollection<Assignment> Assignments { get; set; } = new List<Assignment>();
+        public ICollection<Quiz> Quizzes { get; set; } = new List<Quiz>();
+        public ICollection<Material> Materials { get; set; } = new List<Material>();
+        public ICollection<StudentCourse> StudentCourses { get; set; } = new List<StudentCourse>();
+        public ICollection<Lecture> Lectures { get; set; } = new List<Lecture>();
     }
 }

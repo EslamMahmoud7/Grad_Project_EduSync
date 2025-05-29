@@ -4,13 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Entities
+namespace Domain.DTOs
 {
-    public class Announcement
+    public class AnnouncementDTO
     {
-        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string Title { get; set; } = default!;
         public string Message { get; set; } = default!;
-        public DateTime Date { get; set; } = DateTime.UtcNow;
+        public DateTime Date { get; set; }
     }
 }

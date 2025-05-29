@@ -9,5 +9,7 @@ namespace Domain.Interfaces.IServices
         Task Delete(string id);
         Task<CourseDto> Get(string id);
         Task<IReadOnlyList<CourseDto>> GetAll();
+        Task<IReadOnlyList<CourseDto>> GetForStudent(string studentId);
+        Task AssignCourseAsync(string studentId, string courseId);
     }
 }

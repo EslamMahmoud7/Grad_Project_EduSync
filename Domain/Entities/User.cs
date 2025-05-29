@@ -19,6 +19,7 @@ namespace Domain.Entities
         public double GPA { get; set; }
         public string? Status { get; set; }
         public string? AvatarUrl { get; set; }
+        public ICollection<StudentCourse> StudentCourses { get; set; } = new List<StudentCourse>();
 
     }
 

@@ -36,6 +36,7 @@ namespace Infrastructure
 
         public static IServiceCollection ServicesRegisteration(this IServiceCollection services)
         {
+            services.AddScoped<IGenericRepository<StudentCourse>, GenericRepository<StudentCourse>>();
             services.AddScoped<ITokenService, GenerateToken>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IAccountService, AccountService>();
@@ -44,6 +45,13 @@ namespace Infrastructure
             services.AddScoped<ICourseService, CourseService>();
             services.AddScoped<IProfileService, ProfileService>();
             services.AddScoped<IPaginationService, PaginationService>();
+            services.AddScoped<IGenericRepository<Lecture>, GenericRepository<Lecture>>();
+            services.AddScoped<IGenericRepository<Assignment>, GenericRepository<Assignment>>();
+            services.AddScoped<IGenericRepository<Announcement>, GenericRepository<Announcement>>();
+            services.AddScoped<IAssignmentService, AssignmentService>();
+            services.AddScoped<IAnnouncementService, AnnouncementService>();
+            services.AddScoped<IDashboardService, DashboardService>();
+
             return services;
         }
         public static IServiceCollection JWTTokenConfiguration(this IServiceCollection services, IConfiguration configuration)

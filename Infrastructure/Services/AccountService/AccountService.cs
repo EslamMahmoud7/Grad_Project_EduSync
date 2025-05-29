@@ -96,7 +96,8 @@ namespace Infrastructure.Services.AccountService
                 FirstName = Student.FirstName ?? "unknown fname",
                 LastName = Student.LastName ?? "unknown lname",
                 Email = loginDTO.Email,
-                Token = await _tokenService.GenerateJWTToken(Student)
+                Token = await _tokenService.GenerateJWTToken(Student),
+                Id = Student.Id
             };
         }
         public async Task<UserDTO> Register(RegisterationDTO registerationDTO)

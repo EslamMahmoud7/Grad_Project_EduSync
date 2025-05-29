@@ -4,16 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Entities
+namespace Domain.DTOs
 {
-    public class Assignment
+    public class CreateAssignmentDTO
     {
-        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string Title { get; set; } = default!;
         public string Description { get; set; } = default!;
         public DateTime DueDate { get; set; }
-        public AssignmentStatus Status { get; set; } = AssignmentStatus.Pending;
         public string CourseId { get; set; } = default!;
-        public Course Course { get; set; } = default!;
     }
 }

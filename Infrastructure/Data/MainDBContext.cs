@@ -19,6 +19,7 @@ namespace Infrastructure.Data
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<Announcement> Announcements { get; set; }
         public DbSet<ScheduleItem> ScheduleItems { get; set; }
+        public DbSet<StudentCourse> StudentCourses { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -42,6 +43,26 @@ namespace Infrastructure.Data
             modelBuilder.Entity<Material>()
                 .Property(m => m.FileUrl)
                 .HasMaxLength(500);
+            modelBuilder.Entity<StudentCourse>()
+      .HasKey(sc => new { sc.StudentId, sc.CourseId });
+
+            modelBuilder.Entity<StudentCourse>()
+              .HasOne(sc => sc.Student)
+              .WithMany(u => u.StudentCourses)
+              .HasForeignKey(sc => sc.StudentId);
+
+            modelBuilder.Entity<StudentCourse>()
+              .HasOne(sc => sc.Course)
+              .WithMany(c => c.StudentCourses)
+              .HasForeignKey(sc => sc.CourseId);
+            modelBuilder.Entity<Lecture>()
+            .HasOne(l => l.Course)
+            .WithMany(c => c.Lectures)
+            .HasForeignKey(l => l.CourseId);
+            modelBuilder.Entity<Assignment>()
+            .HasOne(a => a.Course)
+            .WithMany(c => c.Assignments)
+            .HasForeignKey(a => a.CourseId);
         }
     }
 }

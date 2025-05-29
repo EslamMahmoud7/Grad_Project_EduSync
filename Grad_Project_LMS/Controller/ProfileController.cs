@@ -17,7 +17,6 @@ public class ProfileController : ControllerBase
         _profileService = profileService;
     }
 
-    // GET /api/profile
     [HttpGet("{userId}")]
     public async Task<ActionResult<ProfileDTO>> GetProfile(string userId)
     {
@@ -37,5 +36,13 @@ public class ProfileController : ControllerBase
         {
             return StatusCode(500, "An unexpected error occurred.");
         }
+    }
+    [HttpPut("{userId}")]
+    public async Task<ActionResult<ProfileDTO>> UpdateProfile(string userId,[FromBody] UpdateProfileDTO dto)
+    {
+        if(userId == null || dto == null)
+            return BadRequest("Invalid user ID or profile data.");
+        var updated = await _profileService.UpdateProfile(dto,userId);
+        return Ok(updated);
     }
 }

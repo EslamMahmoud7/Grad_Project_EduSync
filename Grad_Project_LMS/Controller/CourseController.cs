@@ -2,6 +2,7 @@
 using Domain.Interfaces.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Grad_Project_LMS.Controller
 {
@@ -50,6 +51,23 @@ namespace Grad_Project_LMS.Controller
         {
             var result = await _courseService.GetAll();
             return Ok(result);
+        }
+        [HttpGet("mine/{studentId}")]
+        public async Task<ActionResult<IReadOnlyList<CourseDto>>> GetMyCourses(string studentId)
+        {
+            if (studentId == null) return Unauthorized();
+
+            var result = await _courseService.GetForStudent(studentId);
+            return Ok(result);
+        }
+        [HttpPost("assign")]
+        public async Task<IActionResult> AssignCourse([FromBody] EnrollmentDTO dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            await _courseService.AssignCourseAsync(dto.StudentId, dto.CourseId);
+            return Ok(new { message = "Student enrolled successfully" });
         }
     }
 }
