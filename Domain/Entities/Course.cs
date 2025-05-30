@@ -24,5 +24,6 @@ namespace Domain.Entities
         public ICollection<Material> Materials { get; set; } = new List<Material>();
         public ICollection<StudentCourse> StudentCourses { get; set; } = new List<StudentCourse>();
         public ICollection<Lecture> Lectures { get; set; } = new List<Lecture>();
+        public ICollection<CourseSchedule> Schedules { get; set; } = new List<CourseSchedule>();
     }
 }

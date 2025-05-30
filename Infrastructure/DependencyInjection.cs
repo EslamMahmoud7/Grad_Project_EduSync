@@ -51,6 +51,7 @@ namespace Infrastructure
             services.AddScoped<IAssignmentService, AssignmentService>();
             services.AddScoped<IAnnouncementService, AnnouncementService>();
             services.AddScoped<IDashboardService, DashboardService>();
+            services.AddScoped<ICourseScheduleService, CourseScheduleService>();
 
             return services;
         }

@@ -20,7 +20,7 @@ namespace Infrastructure.Data
         public DbSet<Announcement> Announcements { get; set; }
         public DbSet<ScheduleItem> ScheduleItems { get; set; }
         public DbSet<StudentCourse> StudentCourses { get; set; }
-
+        public DbSet<CourseSchedule> CourseSchedules { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -63,6 +63,10 @@ namespace Infrastructure.Data
             .HasOne(a => a.Course)
             .WithMany(c => c.Assignments)
             .HasForeignKey(a => a.CourseId);
+            modelBuilder.Entity<CourseSchedule>()
+            .HasOne(cs => cs.Course)
+            .WithMany(c => c.Schedules)
+            .HasForeignKey(cs => cs.CourseId);
         }
     }
 }
