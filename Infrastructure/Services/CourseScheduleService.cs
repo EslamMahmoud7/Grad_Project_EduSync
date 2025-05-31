@@ -17,49 +17,37 @@ public class CourseScheduleService : ICourseScheduleService
         _db = db;
     }
 
-    public async Task<CourseScheduleDTO> AddAsync(CreateCourseScheduleDTO dto)
-    {
-        var sched = new CourseSchedule
-        {
-            CourseId = dto.CourseId,
-            Date = dto.Date,
-            Time = dto.Time,
-            Room = dto.Room,
-            DoctorEmail = dto.DoctorEmail
-        };
-
-        _db.CourseSchedules.Add(sched);
-        await _db.SaveChangesAsync();
-
-        await _db.Entry(sched).Reference(s => s.Course).LoadAsync();
-
-        return new CourseScheduleDTO
-        {
-            Date = sched.Date,
-            Day = sched.Date.DayOfWeek.ToString(),
-            Time = sched.Time,
-            Subject = sched.Course.Title,
-            Room = sched.Room,
-            Doctor = sched.DoctorEmail
-        };
-    }
-
     public async Task<IReadOnlyList<CourseScheduleDTO>> GetForStudentAsync(string studentId)
     {
-        var list = await _db.CourseSchedules
-            .Include(cs => cs.Course)
-            .Where(cs => cs.Course.StudentCourses
-                .Any(sc => sc.StudentId == studentId))
+        var studentGroups = await _db.GroupStudents
+            .Where(gs => gs.StudentId == studentId)
+            .Include(gs => gs.Group)
+                .ThenInclude(g => g.Course)
+            .Include(gs => gs.Group.Instructor)
+            .Select(gs => gs.Group)
+            .AsNoTracking()
             .ToListAsync();
 
-        return list.Select(cs => new CourseScheduleDTO
-        {
-            Date = cs.Date,
-            Day = cs.Date.DayOfWeek.ToString(),
-            Time = cs.Time,
-            Subject = cs.Course.Title,
-            Room = cs.Room,
-            Doctor = cs.DoctorEmail
-        }).ToList();
+        var scheduledLectures = studentGroups
+            .Select(g =>
+            {
+                var doctorDisplayName = g.Instructor != null
+                    ? $"{g.Instructor.FirstName} {g.Instructor.LastName}"
+                    : "N/A";
+
+                return new CourseScheduleDTO
+                {
+                    Date = g.StartTime.Date,
+                    Day = g.StartTime.DayOfWeek.ToString(),
+                    Time = g.StartTime.ToString("h:mm tt"),
+                    Subject = g.Course.Title,
+                    Room = g.Location ?? "N/A",
+                    Doctor = doctorDisplayName
+                };
+            })
+            .OrderBy(dto => dto.Date)
+            .ToList();
+
+        return scheduledLectures;
     }
 }

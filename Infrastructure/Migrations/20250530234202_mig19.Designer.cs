@@ -4,6 +4,7 @@ using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(MainDbContext))]
-    partial class MainDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250530234202_mig19")]
+    partial class mig19
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -119,6 +122,37 @@ namespace Infrastructure.Migrations
                     b.ToTable("Courses");
                 });
 
+            modelBuilder.Entity("Domain.Entities.CourseSchedule", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("CourseId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DoctorEmail")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Room")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Time")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseId");
+
+                    b.ToTable("CourseSchedules");
+                });
+
             modelBuilder.Entity("Domain.Entities.Group", b =>
                 {
                     b.Property<string>("Id")
@@ -130,12 +164,6 @@ namespace Infrastructure.Migrations
 
                     b.Property<DateTime>("EndTime")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("InstructorId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("InstructorId1")
-                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Label")
                         .HasColumnType("nvarchar(max)");
@@ -149,10 +177,6 @@ namespace Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CourseId");
-
-                    b.HasIndex("InstructorId");
-
-                    b.HasIndex("InstructorId1");
 
                     b.ToTable("Groups");
                 });
@@ -195,6 +219,21 @@ namespace Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Instructors");
+                });
+
+            modelBuilder.Entity("Domain.Entities.InstructorGroup", b =>
+                {
+                    b.Property<string>("GroupId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("InstructorId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("GroupId", "InstructorId");
+
+                    b.HasIndex("InstructorId");
+
+                    b.ToTable("InstructorGroups");
                 });
 
             modelBuilder.Entity("Domain.Entities.Material", b =>
@@ -308,6 +347,43 @@ namespace Infrastructure.Migrations
                     b.HasIndex("CreatedByAdminId");
 
                     b.ToTable("Quizzes");
+                });
+
+            modelBuilder.Entity("Domain.Entities.ScheduleItem", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Day")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DoctorEmail")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Room")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StudentProfileId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Time")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ScheduleItems");
                 });
 
             modelBuilder.Entity("Domain.Entities.StudentCourse", b =>
@@ -561,6 +637,17 @@ namespace Infrastructure.Migrations
                     b.Navigation("Course");
                 });
 
+            modelBuilder.Entity("Domain.Entities.CourseSchedule", b =>
+                {
+                    b.HasOne("Domain.Entities.Course", "Course")
+                        .WithMany("Schedules")
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+                });
+
             modelBuilder.Entity("Domain.Entities.Group", b =>
                 {
                     b.HasOne("Domain.Entities.Course", "Course")
@@ -569,18 +656,7 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Domain.Entities.Instructor", "Instructor")
-                        .WithMany()
-                        .HasForeignKey("InstructorId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("Domain.Entities.Instructor", null)
-                        .WithMany("Groups")
-                        .HasForeignKey("InstructorId1");
-
                     b.Navigation("Course");
-
-                    b.Navigation("Instructor");
                 });
 
             modelBuilder.Entity("Domain.Entities.GroupStudent", b =>
@@ -600,6 +676,25 @@ namespace Infrastructure.Migrations
                     b.Navigation("Group");
 
                     b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("Domain.Entities.InstructorGroup", b =>
+                {
+                    b.HasOne("Domain.Entities.Group", "Group")
+                        .WithMany("InstructorGroups")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Instructor", "Instructor")
+                        .WithMany("InstructorGroups")
+                        .HasForeignKey("InstructorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Group");
+
+                    b.Navigation("Instructor");
                 });
 
             modelBuilder.Entity("Domain.Entities.Material", b =>
@@ -723,17 +818,21 @@ namespace Infrastructure.Migrations
 
                     b.Navigation("Quizzes");
 
+                    b.Navigation("Schedules");
+
                     b.Navigation("StudentCourses");
                 });
 
             modelBuilder.Entity("Domain.Entities.Group", b =>
                 {
                     b.Navigation("GroupStudents");
+
+                    b.Navigation("InstructorGroups");
                 });
 
             modelBuilder.Entity("Domain.Entities.Instructor", b =>
                 {
-                    b.Navigation("Groups");
+                    b.Navigation("InstructorGroups");
                 });
 
             modelBuilder.Entity("Domain.Entities.User", b =>

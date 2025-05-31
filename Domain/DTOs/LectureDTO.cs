@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Domain.DTOs
 {
-    public class LecatureDTO
+    public class LectureDTO
     {
         public string Time { get; set; } = default!;
         public string Subject { get; set; } = default!;

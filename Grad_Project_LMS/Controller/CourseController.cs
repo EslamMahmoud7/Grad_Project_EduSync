@@ -2,7 +2,6 @@
 using Domain.Interfaces.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace Grad_Project_LMS.Controller
 {
@@ -52,22 +51,53 @@ namespace Grad_Project_LMS.Controller
             var result = await _courseService.GetAll();
             return Ok(result);
         }
+
         [HttpGet("mine/{studentId}")]
         public async Task<ActionResult<IReadOnlyList<CourseDto>>> GetMyCourses(string studentId)
         {
-            if (studentId == null) return Unauthorized();
+            if (string.IsNullOrWhiteSpace(studentId)) return Unauthorized();
 
             var result = await _courseService.GetForStudent(studentId);
             return Ok(result);
         }
-        [HttpPost("assign")]
+
+        [HttpPost("assign-course")]
         public async Task<IActionResult> AssignCourse([FromBody] EnrollmentDTO dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            await _courseService.AssignCourseAsync(dto.StudentId, dto.CourseId);
-            return Ok(new { message = "Student enrolled successfully" });
+            try
+            {
+                await _courseService.AssignCourseAsync(dto.StudentId, dto.CourseId);
+                return Ok(new { message = "Student enrolled in course successfully" });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        [HttpPost("assign-to-group")]
+        public async Task<IActionResult> AssignStudentToGroup([FromBody] GroupEnrollmentDTO dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                await _courseService.AssignStudentToGroupAsync(dto);
+                return Ok(new { message = "Student assigned to group successfully" });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while assigning student to group.");
+            }
         }
     }
 }

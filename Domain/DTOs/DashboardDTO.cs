@@ -12,7 +12,7 @@ namespace Domain.DTOs
         public double GPA { get; set; }
         public int TotalCourses { get; set; }
         public int PendingAssignments { get; set; }
-        public List<LecatureDTO> TodaysClasses { get; set; } = new();
+        public List<LectureDTO> TodaysClasses { get; set; } = new List<LectureDTO>();
         public List<AssignmentDTO> UpcomingAssignments { get; set; } = new();
         public List<AnnouncementDTO> Announcements { get; set; } = new();
     }

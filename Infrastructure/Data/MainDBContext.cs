@@ -12,16 +12,17 @@ namespace Infrastructure.Data
         }
 
         public DbSet<Course> Courses { get; set; }
-        public DbSet<Lecture> Lectures { get; set; }
         public DbSet<Assignment> Assignments { get; set; }
         public DbSet<Quiz> Quizzes { get; set; }
         public DbSet<Material> Materials { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<Announcement> Announcements { get; set; }
-        public DbSet<ScheduleItem> ScheduleItems { get; set; }
         public DbSet<StudentCourse> StudentCourses { get; set; }
-        public DbSet<CourseSchedule> CourseSchedules { get; set; }
+        public DbSet<Instructor> Instructors { get; set; }
+        public DbSet<Group> Groups { get; set; }
+        public DbSet<GroupStudent> GroupStudents { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
+
         {
             base.OnModelCreating(modelBuilder);
 
@@ -55,18 +56,28 @@ namespace Infrastructure.Data
               .HasOne(sc => sc.Course)
               .WithMany(c => c.StudentCourses)
               .HasForeignKey(sc => sc.CourseId);
-            modelBuilder.Entity<Lecture>()
-            .HasOne(l => l.Course)
-            .WithMany(c => c.Lectures)
-            .HasForeignKey(l => l.CourseId);
             modelBuilder.Entity<Assignment>()
             .HasOne(a => a.Course)
             .WithMany(c => c.Assignments)
             .HasForeignKey(a => a.CourseId);
-            modelBuilder.Entity<CourseSchedule>()
-            .HasOne(cs => cs.Course)
-            .WithMany(c => c.Schedules)
-            .HasForeignKey(cs => cs.CourseId);
+           
+            modelBuilder.Entity<GroupStudent>()
+           .HasKey(gs => new { gs.GroupId, gs.StudentId });
+            modelBuilder.Entity<Group>()
+           .HasOne(g => g.Course)
+           .WithMany(c => c.Groups)
+           .HasForeignKey(g => g.CourseId);
+            modelBuilder.Entity<GroupStudent>()
+            .HasOne(gs => gs.Student)
+            .WithMany(s => s.GroupStudents)
+            .HasForeignKey(gs => gs.StudentId);
+
+            modelBuilder.Entity<Group>()
+                .HasOne(g => g.Instructor)
+                .WithMany()
+                .HasForeignKey(g => g.InstructorId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

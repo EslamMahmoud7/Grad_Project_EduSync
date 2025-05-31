@@ -23,7 +23,7 @@ namespace Domain.Entities
         public ICollection<Quiz> Quizzes { get; set; } = new List<Quiz>();
         public ICollection<Material> Materials { get; set; } = new List<Material>();
         public ICollection<StudentCourse> StudentCourses { get; set; } = new List<StudentCourse>();
-        public ICollection<Lecture> Lectures { get; set; } = new List<Lecture>();
-        public ICollection<CourseSchedule> Schedules { get; set; } = new List<CourseSchedule>();
+        public ICollection<Group> Groups { get; set; } = new List<Group>();
+
     }
 }

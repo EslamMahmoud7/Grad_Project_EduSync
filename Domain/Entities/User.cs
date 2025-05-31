@@ -20,6 +20,7 @@ namespace Domain.Entities
         public string? Status { get; set; }
         public string? AvatarUrl { get; set; }
         public ICollection<StudentCourse> StudentCourses { get; set; } = new List<StudentCourse>();
+        public ICollection<GroupStudent> GroupStudents { get; set; } = new List<GroupStudent>();
 
     }
 

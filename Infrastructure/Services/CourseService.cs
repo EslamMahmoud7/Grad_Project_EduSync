@@ -3,7 +3,7 @@ using Domain.Entities;
 using Domain.Interfaces;
 using Domain.Interfaces.IServices;
 using Domain.Interfaces.Repositories;
-using Microsoft.AspNetCore.Cors.Infrastructure;
+using Infrastructure.Data;
 
 namespace Infrastructure.Services
 {
@@ -12,12 +12,21 @@ namespace Infrastructure.Services
         private readonly IGenericRepository<Course> _courseRepo;
         private readonly IPaginationService _paginationService;
         private readonly IGenericRepository<StudentCourse> _studentCourseRepo;
+        private readonly IGenericRepository<GroupStudent> _groupStudentRepo;
+        private readonly MainDbContext _db;
 
-        public CourseService(IGenericRepository<Course> courseRepo, IPaginationService paginationService, IGenericRepository<StudentCourse> studentCourseRepo)
+
+        public CourseService(
+            IGenericRepository<Course> courseRepo,
+            IPaginationService paginationService,
+            IGenericRepository<StudentCourse> studentCourseRepo,
+            IGenericRepository<GroupStudent> groupStudentRepo, MainDbContext dbContext)
         {
             _courseRepo = courseRepo;
             _paginationService = paginationService;
             _studentCourseRepo = studentCourseRepo;
+            _groupStudentRepo = groupStudentRepo;
+            _db = dbContext;
         }
 
         public async Task<CourseDto> Add(CourseDto dto)
@@ -98,7 +107,6 @@ namespace Infrastructure.Services
                 NextDeadline = course.NextDeadline
             };
         }
-
         public async Task<IReadOnlyList<CourseDto>> GetForStudent(string studentId)
         {
             var enrollments = await _studentCourseRepo.GetAll();
@@ -117,7 +125,6 @@ namespace Infrastructure.Services
 
             return courses.Select(MapToDto).ToList();
         }
-
         public async Task AssignCourseAsync(string studentId, string courseId)
         {
             var allEnrollments = await _studentCourseRepo.GetAll();
@@ -134,6 +141,31 @@ namespace Infrastructure.Services
             };
 
             await _studentCourseRepo.Add(enrollment);
+        }
+
+        public async Task AssignStudentToGroupAsync(GroupEnrollmentDTO dto)
+        {
+            var group = await _db.Groups.FindAsync(dto.GroupId);
+            if (group == null)
+            {
+                throw new ArgumentException($"Group with ID '{dto.GroupId}' not found.");
+            }
+
+            var existingEnrollment = await _groupStudentRepo.GetAll();
+            if (existingEnrollment.Any(gs =>
+                    gs.StudentId == dto.StudentId &&
+                    gs.GroupId == dto.GroupId))
+            {
+                throw new ArgumentException("Student is already enrolled in this group.");
+            }
+
+            var groupStudent = new GroupStudent
+            {
+                StudentId = dto.StudentId,
+                GroupId = dto.GroupId
+            };
+
+            await _groupStudentRepo.Add(groupStudent);
         }
     }
 }

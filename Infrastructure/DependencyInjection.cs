@@ -41,17 +41,21 @@ namespace Infrastructure
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IGenericRepository<Course>, GenericRepository<Course>>();
-            services.AddScoped<IGenericRepository<Lecture>, GenericRepository<Lecture>>();
             services.AddScoped<ICourseService, CourseService>();
             services.AddScoped<IProfileService, ProfileService>();
             services.AddScoped<IPaginationService, PaginationService>();
-            services.AddScoped<IGenericRepository<Lecture>, GenericRepository<Lecture>>();
             services.AddScoped<IGenericRepository<Assignment>, GenericRepository<Assignment>>();
             services.AddScoped<IGenericRepository<Announcement>, GenericRepository<Announcement>>();
             services.AddScoped<IAssignmentService, AssignmentService>();
             services.AddScoped<IAnnouncementService, AnnouncementService>();
             services.AddScoped<IDashboardService, DashboardService>();
             services.AddScoped<ICourseScheduleService, CourseScheduleService>();
+            services.AddScoped<IGenericRepository<GroupStudent>, GenericRepository<GroupStudent>>();
+            services.AddScoped<IGenericRepository<Group>, GenericRepository<Group>>();
+            services.AddScoped<IGroupService, GroupService>();
+            services.AddScoped<IGenericRepository<Instructor>, GenericRepository<Instructor>>();
+            services.AddScoped<IInstructorService, InstructorService>();
+
 
             return services;
         }
