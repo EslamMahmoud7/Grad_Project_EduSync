@@ -7,7 +7,7 @@ namespace Domain.Interfaces.IServices
     public interface IQuizService
     {
         Task<QuizDTO> CreateQuizAsync(CreateQuizDTO dto, string instructorId);
-        Task<QuizDTO> UpdateQuizAsync(string quizId, UpdateQuizDTO dto, string instructorId);
+        Task<QuizDTO> UpdateQuizAsync(string quizId, UpdateQuizDTO dto, string requestingInstructorId);
         Task<QuizModelDTO> AddQuizModelAsync(UploadQuizModelCsvDTO dto, string instructorId);
         Task DeleteQuizAsync(string quizId, string instructorId);
         Task<QuizDTO> GetQuizByIdForInstructorAsync(string quizId, string instructorId);
@@ -21,4 +21,4 @@ namespace Domain.Interfaces.IServices
         Task<QuizAttemptResultDTO> SubmitQuizAttemptAsync(StudentQuizSubmissionDTO submissionDto, string studentId);
         Task<QuizAttemptResultDTO> GetStudentQuizAttemptResultAsync(string attemptId, string studentId);
     }
-}
+}   

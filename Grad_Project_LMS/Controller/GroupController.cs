@@ -22,7 +22,7 @@ namespace Grad_Project_LMS.Controller
         public async Task<ActionResult<GroupDTO>> AddGroup([FromBody] CreateGroupDTO dto)
         {
             if (!ModelState.IsValid)
-            {   
+            {
                 return BadRequest(ModelState);
             }
             try
@@ -100,7 +100,6 @@ namespace Grad_Project_LMS.Controller
             }
         }
 
-
         [HttpPut("{id}")]
         public async Task<ActionResult<GroupDTO>> UpdateGroup(string id, [FromBody] UpdateGroupDTO dto)
         {
@@ -116,6 +115,10 @@ namespace Grad_Project_LMS.Controller
             catch (ArgumentException ex)
             {
                 return NotFound(ex.Message);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return StatusCode(403, ex.Message);
             }
             catch (Exception ex)
             {
@@ -134,6 +137,32 @@ namespace Grad_Project_LMS.Controller
             catch (ArgumentException ex)
             {
                 return NotFound(ex.Message);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return StatusCode(403, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [HttpGet("{groupId}/students")]
+        public async Task<ActionResult<IReadOnlyList<StudentInGroupDTO>>> GetStudentsInGroup(string groupId)
+        {
+            try
+            {
+                var students = await _groupService.GetStudentsByGroupIdAsync(groupId);
+                return Ok(students);
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return StatusCode(403, ex.Message);
             }
             catch (Exception ex)
             {

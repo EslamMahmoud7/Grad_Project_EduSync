@@ -1,17 +1,13 @@
-﻿// Infrastructure/Services/QuizService.cs
-using Domain.DTOs;
+﻿using Domain.DTOs;
 using Domain.Entities;
 using Domain.Interfaces.IServices;
-using Domain.Interfaces.Repositories; // If you decide to use specific repositories
 using Infrastructure.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Infrastructure.Services
@@ -81,11 +77,13 @@ namespace Infrastructure.Services
             };
         }
 
-
         public async Task<QuizDTO> CreateQuizAsync(CreateQuizDTO dto, string instructorId)
         {
             var group = await _db.Groups.FindAsync(dto.GroupId);
             if (group == null) throw new ArgumentException("Group not found.");
+
+            var instructorExists = await _db.Users.AnyAsync(u => u.Id == instructorId);
+            if (!instructorExists) throw new ArgumentException("Instructor not found.");
 
 
             var quiz = new Quiz
@@ -111,7 +109,7 @@ namespace Infrastructure.Services
             return MapQuizToDTO(quiz);
         }
 
-        public async Task<QuizDTO> UpdateQuizAsync(string quizId, UpdateQuizDTO dto, string instructorId)
+        public async Task<QuizDTO> UpdateQuizAsync(string quizId, UpdateQuizDTO dto, string requestingInstructorId)
         {
             var quiz = await _db.Quizzes
                 .Include(q => q.Group)
@@ -119,7 +117,12 @@ namespace Infrastructure.Services
                 .FirstOrDefaultAsync(q => q.Id == quizId);
 
             if (quiz == null) throw new ArgumentException("Quiz not found.");
-            if (quiz.InstructorId != instructorId) throw new UnauthorizedAccessException("You are not authorized to update this quiz.");
+
+            if (quiz.InstructorId != requestingInstructorId)
+            {
+                throw new ArgumentException($"Quiz does not belong to instructor {requestingInstructorId}. It belongs to {quiz.InstructorId}");
+            }
+
 
             if (dto.Title != null) quiz.Title = dto.Title;
             if (dto.Description != null) quiz.Description = dto.Description;
@@ -139,13 +142,16 @@ namespace Infrastructure.Services
             var quiz = await _db.Quizzes.Include(q => q.QuizModels)
                                         .FirstOrDefaultAsync(q => q.Id == dto.QuizId);
             if (quiz == null) throw new ArgumentException("Quiz not found.");
-            if (quiz.InstructorId != instructorId) throw new UnauthorizedAccessException("You are not authorized to modify this quiz.");
+
+            if (quiz.InstructorId != instructorId)
+            {
+                throw new ArgumentException($"Quiz does not belong to instructor {instructorId}.");
+            }
             if (quiz.QuizModels.Count >= 4) throw new InvalidOperationException("A quiz cannot have more than 4 models.");
             if (quiz.QuizModels.Any(qm => qm.ModelIdentifier.Equals(dto.ModelIdentifier, StringComparison.OrdinalIgnoreCase)))
             {
                 throw new ArgumentException($"Model with identifier '{dto.ModelIdentifier}' already exists for this quiz.");
             }
-
 
             var parsedQuestions = new List<ParsedQuestionDTO>();
             try
@@ -157,10 +163,8 @@ namespace Infrastructure.Services
                     while ((line = await reader.ReadLineAsync()) != null)
                     {
                         if (isFirstLine) { isFirstLine = false; continue; }
-
                         var values = line.Split(',');
                         if (values.Length < 7) continue;
-
                         parsedQuestions.Add(new ParsedQuestionDTO
                         {
                             QuestionText = values[0].Trim(),
@@ -182,7 +186,6 @@ namespace Infrastructure.Services
                 throw new ArgumentException("CSV contains one or more questions with an invalid CorrectOptionIndex.");
             }
 
-
             var quizModel = new QuizModel
             {
                 QuizId = quiz.Id,
@@ -191,7 +194,6 @@ namespace Infrastructure.Services
             };
             _db.QuizModels.Add(quizModel);
             await _db.SaveChangesAsync();
-
 
             foreach (var pq in parsedQuestions)
             {
@@ -204,7 +206,6 @@ namespace Infrastructure.Services
                 };
                 _db.Questions.Add(question);
                 await _db.SaveChangesAsync();
-
 
                 for (int i = 0; i < pq.Options.Count; i++)
                 {
@@ -228,12 +229,14 @@ namespace Infrastructure.Services
             return MapQuizModelToDTO(fullQuizModel!, true);
         }
 
-
         public async Task DeleteQuizAsync(string quizId, string instructorId)
         {
             var quiz = await _db.Quizzes.FirstOrDefaultAsync(q => q.Id == quizId);
             if (quiz == null) throw new ArgumentException("Quiz not found.");
-            if (quiz.InstructorId != instructorId) throw new UnauthorizedAccessException("You are not authorized to delete this quiz.");
+            if (quiz.InstructorId != instructorId)
+            {
+                throw new ArgumentException($"Quiz does not belong to instructor {instructorId}.");
+            }
             _db.Quizzes.Remove(quiz);
             await _db.SaveChangesAsync();
         }
@@ -250,9 +253,7 @@ namespace Infrastructure.Services
                 .FirstOrDefaultAsync(q => q.Id == quizId);
 
             if (quiz == null) throw new ArgumentException("Quiz not found.");
-            if (quiz.InstructorId != instructorId && !(await IsUserAdmin(instructorId)))
-            {
-            }
+
             var quizDto = MapQuizToDTO(quiz, true);
             quizDto.QuizModels.ForEach(qmDto =>
             {
@@ -262,8 +263,6 @@ namespace Infrastructure.Services
 
             return quizDto;
         }
-        private async Task<bool> IsUserAdmin(string userId) { return false; }
-
 
         public async Task<IReadOnlyList<QuizDTO>> GetQuizzesByGroupIdForInstructorAsync(string groupId, string instructorId)
         {
@@ -275,7 +274,6 @@ namespace Infrastructure.Services
                 .AsNoTracking()
                 .OrderByDescending(q => q.DateCreated)
                 .ToListAsync();
-
             return quizzes.Select(q => MapQuizToDTO(q, true)).ToList();
         }
 
@@ -289,12 +287,9 @@ namespace Infrastructure.Services
                .AsNoTracking()
                .OrderByDescending(q => q.DateCreated)
                .ToListAsync();
-
             return quizzes.Select(q => MapQuizToDTO(q, true)).ToList();
         }
 
-
-        // --- Student Methods ---
         public async Task<IReadOnlyList<StudentQuizListItemDTO>> GetAvailableQuizzesForStudentAsync(string studentId)
         {
             var studentGroupIds = await _db.GroupStudents
@@ -350,7 +345,6 @@ namespace Infrastructure.Services
                 return await GetStudentQuizAttemptDetailsAsync(existingInProgressAttempt.Id, studentId, quiz.ShuffleQuestions);
             }
 
-
             var random = new Random();
             int modelIndex = random.Next(quiz.QuizModels.Count);
             var selectedModel = quiz.QuizModels.ToList()[modelIndex];
@@ -390,7 +384,6 @@ namespace Infrastructure.Services
 
             return await GetStudentQuizAttemptDetailsAsync(attempt.Id, studentId, attempt.Quiz.ShuffleQuestions);
         }
-
 
         private async Task<StudentQuizAttemptDTO> GetStudentQuizAttemptDetailsAsync(string attemptId, string studentId, bool shuffleQuestions)
         {
@@ -436,7 +429,8 @@ namespace Infrastructure.Services
                 .FirstOrDefaultAsync(a => a.Id == submissionDto.AttemptId && a.StudentId == studentId);
 
             if (attempt == null) throw new ArgumentException("Attempt not found.");
-            if (attempt.Status != QuizAttemptStatus.InProgress) throw new InvalidOperationException("This attempt cannot be submitted (already submitted or graded).");
+            if (attempt.StudentId != studentId) throw new ArgumentException("Submission studentId does not match attempt's studentId.");
+            if (attempt.Status != QuizAttemptStatus.InProgress) throw new InvalidOperationException("This attempt cannot be submitted.");
 
             var expectedEndTime = attempt.StartTime.AddMinutes(attempt.Quiz.DurationMinutes);
             if (DateTime.UtcNow > expectedEndTime && attempt.Status == QuizAttemptStatus.InProgress)
@@ -513,13 +507,12 @@ namespace Infrastructure.Services
             var expectedEndTime = attempt.StartTime.AddMinutes(attempt.Quiz.DurationMinutes);
             if (DateTime.UtcNow > expectedEndTime)
             {
-                attempt.EndTime = expectedEndTime; 
+                attempt.EndTime = expectedEndTime;
                 attempt.Status = QuizAttemptStatus.TimeExpired;
                 await _db.SaveChangesAsync();
                 await AutoGradeAttemptAsync(attempt.Id);
             }
         }
-
 
         public async Task<QuizAttemptResultDTO> GetStudentQuizAttemptResultAsync(string attemptId, string studentId)
         {
@@ -537,6 +530,8 @@ namespace Infrastructure.Services
                 .FirstOrDefaultAsync(a => a.Id == attemptId && a.StudentId == studentId);
 
             if (attempt == null) throw new ArgumentException("Attempt result not found.");
+            if (attempt.StudentId != studentId) throw new ArgumentException("Attempt does not belong to specified student.");
+
 
             int totalPointsPossible = attempt.QuizModel.Questions.Sum(q => q.Points);
 
@@ -577,7 +572,6 @@ namespace Infrastructure.Services
             var attempt = await _db.StudentQuizAttempts
                 .Include(a => a.Student)
                 .Include(a => a.Quiz)
-                .ThenInclude(q => q.Instructor)
                 .Include(a => a.QuizModel)
                     .ThenInclude(qm => qm.Questions)
                 .Include(a => a.Answers)
@@ -589,11 +583,10 @@ namespace Infrastructure.Services
                 .FirstOrDefaultAsync(a => a.Id == attemptId);
 
             if (attempt == null) throw new ArgumentException("Attempt not found.");
-            if (attempt.Quiz.InstructorId != instructorId && !(await IsUserAdmin(instructorId)))
+            if (attempt.Quiz.InstructorId != instructorId)
             {
-                throw new UnauthorizedAccessException("You are not authorized to view this attempt.");
+                throw new ArgumentException($"Quiz for this attempt does not belong to instructor {instructorId}.");
             }
-
             return await GetStudentQuizAttemptResultAsync(attemptId, attempt.StudentId);
         }
 
@@ -601,9 +594,9 @@ namespace Infrastructure.Services
         {
             var quiz = await _db.Quizzes.FindAsync(quizId);
             if (quiz == null) throw new ArgumentException("Quiz not found.");
-            if (quiz.InstructorId != instructorId && !(await IsUserAdmin(instructorId)))
+            if (quiz.InstructorId != instructorId)
             {
-                throw new UnauthorizedAccessException("You are not authorized to view attempts for this quiz.");
+                throw new ArgumentException($"Quiz does not belong to instructor {instructorId}.");
             }
 
             var attempts = await _db.StudentQuizAttempts

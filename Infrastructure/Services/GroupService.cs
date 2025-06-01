@@ -27,11 +27,42 @@ namespace Infrastructure.Services
             _db = db;
         }
 
+        public async Task<IReadOnlyList<StudentInGroupDTO>> GetStudentsByGroupIdAsync(string groupId)
+        {
+            var groupExists = await _db.Groups.AnyAsync(g => g.Id == groupId);
+            if (!groupExists)
+            {
+                throw new ArgumentException($"Group with ID '{groupId}' not found.");
+            }
+
+            var students = await _db.GroupStudents
+                .Where(gs => gs.GroupId == groupId)
+                .Include(gs => gs.Student)
+                .Select(gs => new StudentInGroupDTO
+                {
+                    StudentId = gs.Student.Id,
+                    FirstName = gs.Student.FirstName,
+                    LastName = gs.Student.LastName,
+                    Email = gs.Student.Email ?? "N/A"
+                })
+                .AsNoTracking()
+                .ToListAsync();
+
+            return students;
+        }
+
         public async Task<GroupDTO> AddGroupAsync(CreateGroupDTO dto)
         {
+            var course = await _db.Courses.FindAsync(dto.CourseId);
+            if (course == null) throw new ArgumentException($"Course with ID '{dto.CourseId}' not found.");
+
             if (!string.IsNullOrEmpty(dto.InstructorId))
             {
-                var instructor = await _instructorRepo.GetById(dto.InstructorId);
+                var instructorUser = await _db.Users.FirstOrDefaultAsync(u => u.Id == dto.InstructorId);
+                if (instructorUser == null)
+                {
+                    throw new ArgumentException($"Instructor (User) with ID '{dto.InstructorId}' not found.");
+                }
             }
 
             var group = new Group
@@ -44,126 +75,37 @@ namespace Infrastructure.Services
                 Location = dto.Location,
                 InstructorId = dto.InstructorId
             };
-
             await _groupRepo.Add(group);
-
             return await GetGroupByIdAsync(group.Id);
-        }
-
-        public async Task DeleteGroupAsync(string id)
-        {
-            var group = await _groupRepo.GetById(id);
-            if (group == null)
-            {
-                throw new ArgumentException($"Group with ID '{id}' not found.");
-            }
-
-            var groupStudents = _db.GroupStudents.Where(gs => gs.GroupId == id);
-            _db.GroupStudents.RemoveRange(groupStudents);
-            await _db.SaveChangesAsync();
-
-            await _groupRepo.Delete(group);
-        }
-
-        public async Task<IReadOnlyList<GroupDTO>> GetAllGroupsAsync()
-        {
-            var groups = await _db.Groups
-                .Include(g => g.Course)
-                .Include(g => g.Instructor)
-                .Include(g => g.GroupStudents)
-                .AsNoTracking()
-                .ToListAsync();
-
-            return groups.Select(g => MapToDto(g)).ToList();
-        }
-
-        public async Task<GroupDTO> GetGroupByIdAsync(string id)
-        {
-            var group = await _db.Groups
-                .Where(g => g.Id == id)
-                .Include(g => g.Course)
-                .Include(g => g.Instructor)
-                .Include(g => g.GroupStudents)
-                .AsNoTracking()
-                .FirstOrDefaultAsync();
-
-            if (group == null)
-            {
-                throw new ArgumentException($"Group with ID '{id}' not found.");
-            }
-
-            return MapToDto(group);
-        }
-
-        public async Task<IReadOnlyList<GroupDTO>> GetGroupsByCourseIdAsync(string courseId)
-        {
-            var groups = await _db.Groups
-                .Where(g => g.CourseId == courseId)
-                .Include(g => g.Course)
-                .Include(g => g.Instructor)
-                .Include(g => g.GroupStudents)
-                .AsNoTracking()
-                .ToListAsync();
-
-            return groups.Select(g => MapToDto(g)).ToList();
-        }
-
-        public async Task<IReadOnlyList<GroupDTO>> GetGroupsByInstructorIdAsync(string instructorId)
-        {
-            var groups = await _db.Groups
-                .Where(g => g.InstructorId == instructorId)
-                .Include(g => g.Course)
-                .Include(g => g.Instructor)
-                .Include(g => g.GroupStudents)
-                .AsNoTracking()
-                .ToListAsync();
-
-            return groups.Select(g => MapToDto(g)).ToList();
         }
 
         public async Task<GroupDTO> UpdateGroupAsync(string id, UpdateGroupDTO dto)
         {
-            var group = await _db.Groups
-                .Where(g => g.Id == id)
-                .FirstOrDefaultAsync();
-
+            var group = await _db.Groups.FindAsync(id);
             if (group == null)
             {
                 throw new ArgumentException($"Group with ID '{id}' not found.");
             }
 
-            if (!string.IsNullOrEmpty(dto.InstructorId))
+            if (dto.InstructorId != null && group.InstructorId != dto.InstructorId)
             {
-                var instructor = await _instructorRepo.GetById(dto.InstructorId);
-                if (instructor == null)
+                var instructorUser = await _db.Users.FirstOrDefaultAsync(u => u.Id == dto.InstructorId);
+                if (instructorUser == null && !string.IsNullOrEmpty(dto.InstructorId))
                 {
-                    throw new ArgumentException($"Instructor with ID '{dto.InstructorId}' not found.");
+                    throw new ArgumentException($"Instructor (User) with ID '{dto.InstructorId}' not found.");
                 }
+                group.InstructorId = dto.InstructorId;
+            }
+            else if (dto.InstructorId == null && group.InstructorId != null)
+            {
+                group.InstructorId = null;
             }
 
-            group.Label = dto.Label;
-            group.StartTime = dto.StartTime;
-            group.EndTime = dto.EndTime;
-            group.Location = dto.Location;
-            group.InstructorId = dto.InstructorId;
+            if (dto.Label != null) group.Label = dto.Label;
+            if (dto.Location != null) group.Location = dto.Location;
 
-            await _db.SaveChangesAsync();
-
-            return await GetGroupByIdAsync(group.Id);
-        }
-        public async Task<IReadOnlyList<GroupDTO>> GetGroupsByStudentIdAsync(string studentId)
-        {
-            var groups = await _db.GroupStudents
-                .Where(gs => gs.StudentId == studentId)
-                .Include(gs => gs.Group)
-                    .ThenInclude(g => g.Course)
-                .Include(gs => gs.Group.Instructor)
-                .Include(gs => gs.Group.GroupStudents) 
-                .Select(gs => gs.Group) 
-                .AsNoTracking() 
-                .ToListAsync();
-
-            return groups.Select(g => MapToDto(g)).ToList();
+            await _groupRepo.Update(group);
+            return await GetGroupByIdAsync(id);
         }
 
         private GroupDTO MapToDto(Group group)
@@ -177,7 +119,6 @@ namespace Infrastructure.Services
                 CourseCredits = group.Course?.Credits ?? 0,
                 CourseResourceLink = group.Course?.ResourceLink,
                 CourseLevel = group.Course?.Level ?? 0,
-
                 Label = group.Label,
                 StartTime = group.StartTime,
                 EndTime = group.EndTime,
@@ -191,6 +132,61 @@ namespace Infrastructure.Services
                 } : null,
                 NumberOfStudents = group.GroupStudents?.Count ?? 0
             };
+        }
+
+        public async Task<IReadOnlyList<GroupDTO>> GetGroupsByStudentIdAsync(string studentId)
+        {
+            var groups = await _db.GroupStudents
+               .Where(gs => gs.StudentId == studentId)
+               .Include(gs => gs.Group).ThenInclude(g => g.Course)
+               .Include(gs => gs.Group).ThenInclude(g => g.Instructor)
+               .Include(gs => gs.Group).ThenInclude(g => g.GroupStudents)
+               .Select(gs => gs.Group)
+               .Distinct()
+               .AsNoTracking().ToListAsync();
+            return groups.Select(g => MapToDto(g!)).ToList();
+        }
+
+        public async Task DeleteGroupAsync(string id)
+        {
+            var group = await _groupRepo.GetById(id);
+            if (group == null) throw new ArgumentException($"Group with ID '{id}' not found.");
+            var groupStudents = _db.GroupStudents.Where(gs => gs.GroupId == id);
+            if (await groupStudents.AnyAsync()) _db.GroupStudents.RemoveRange(groupStudents);
+            await _groupRepo.Delete(group);
+        }
+
+        public async Task<IReadOnlyList<GroupDTO>> GetAllGroupsAsync()
+        {
+            var groups = await _db.Groups
+                .Include(g => g.Course).Include(g => g.Instructor).Include(g => g.GroupStudents)
+                .AsNoTracking().ToListAsync();
+            return groups.Select(MapToDto).ToList();
+        }
+
+        public async Task<GroupDTO> GetGroupByIdAsync(string id)
+        {
+            var group = await _db.Groups.Where(g => g.Id == id)
+                .Include(g => g.Course).Include(g => g.Instructor).Include(g => g.GroupStudents)
+                .AsNoTracking().FirstOrDefaultAsync();
+            if (group == null) throw new ArgumentException($"Group with ID '{id}' not found.");
+            return MapToDto(group);
+        }
+
+        public async Task<IReadOnlyList<GroupDTO>> GetGroupsByCourseIdAsync(string courseId)
+        {
+            var groups = await _db.Groups.Where(g => g.CourseId == courseId)
+                .Include(g => g.Course).Include(g => g.Instructor).Include(g => g.GroupStudents)
+                .AsNoTracking().ToListAsync();
+            return groups.Select(MapToDto).ToList();
+        }
+
+        public async Task<IReadOnlyList<GroupDTO>> GetGroupsByInstructorIdAsync(string instructorId)
+        {
+            var groups = await _db.Groups.Where(g => g.InstructorId == instructorId)
+                .Include(g => g.Course).Include(g => g.Instructor).Include(g => g.GroupStudents)
+                .AsNoTracking().ToListAsync();
+            return groups.Select(MapToDto).ToList();
         }
     }
 }

@@ -9,10 +9,11 @@ namespace Domain.Interfaces.IServices
         Task<GroupDTO> AddGroupAsync(CreateGroupDTO dto);
         Task<GroupDTO> GetGroupByIdAsync(string id);
         Task<IReadOnlyList<GroupDTO>> GetAllGroupsAsync();
-        Task<GroupDTO> UpdateGroupAsync(string id, UpdateGroupDTO dto);
-        Task DeleteGroupAsync(string id);
         Task<IReadOnlyList<GroupDTO>> GetGroupsByCourseIdAsync(string courseId);
         Task<IReadOnlyList<GroupDTO>> GetGroupsByInstructorIdAsync(string instructorId);
         Task<IReadOnlyList<GroupDTO>> GetGroupsByStudentIdAsync(string studentId);
+        Task<GroupDTO> UpdateGroupAsync(string id, UpdateGroupDTO dto);
+        Task DeleteGroupAsync(string id);
+        Task<IReadOnlyList<StudentInGroupDTO>> GetStudentsByGroupIdAsync(string groupId);
     }
 }

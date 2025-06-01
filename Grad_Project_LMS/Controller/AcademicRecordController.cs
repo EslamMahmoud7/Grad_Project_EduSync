@@ -1,9 +1,10 @@
 ﻿using Domain.DTOs;
 using Domain.Interfaces.IServices;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Security.Claims;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+
 namespace Grad_Project_LMS.Controller
 {
     [ApiController]
@@ -45,11 +46,6 @@ namespace Grad_Project_LMS.Controller
             try
             {
                 var record = await _academicRecordService.GetAcademicRecordByIdAsync(id);
-                var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (User.IsInRole(Domain.Entities.UserRole.Student.ToString()) && record.StudentId != userId)
-                {
-                    return Forbid();
-                }
                 return Ok(record);
             }
             catch (ArgumentException ex)
@@ -79,12 +75,6 @@ namespace Grad_Project_LMS.Controller
         [HttpGet("student/{studentId}")]
         public async Task<ActionResult<IReadOnlyList<AcademicRecordDTO>>> GetAcademicRecordsByStudentId(string studentId)
         {
-            var currentUserId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (User.IsInRole(Domain.Entities.UserRole.Student.ToString()) && currentUserId != studentId)
-            {
-                return Forbid();
-            }
-
             try
             {
                 var records = await _academicRecordService.GetAcademicRecordsByStudentIdAsync(studentId);
@@ -103,7 +93,6 @@ namespace Grad_Project_LMS.Controller
         [HttpGet("group/{groupId}")]
         public async Task<ActionResult<IReadOnlyList<AcademicRecordDTO>>> GetAcademicRecordsByGroupId(string groupId)
         {
-
             try
             {
                 var records = await _academicRecordService.GetAcademicRecordsByGroupIdAsync(groupId);
@@ -142,7 +131,6 @@ namespace Grad_Project_LMS.Controller
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteAcademicRecord(string id)
         {
             try
