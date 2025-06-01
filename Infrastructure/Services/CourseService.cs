@@ -4,6 +4,8 @@ using Domain.Interfaces;
 using Domain.Interfaces.IServices;
 using Domain.Interfaces.Repositories;
 using Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace Infrastructure.Services
 {
@@ -11,25 +13,22 @@ namespace Infrastructure.Services
     {
         private readonly IGenericRepository<Course> _courseRepo;
         private readonly IPaginationService _paginationService;
-        private readonly IGenericRepository<StudentCourse> _studentCourseRepo;
         private readonly IGenericRepository<GroupStudent> _groupStudentRepo;
         private readonly MainDbContext _db;
-
 
         public CourseService(
             IGenericRepository<Course> courseRepo,
             IPaginationService paginationService,
-            IGenericRepository<StudentCourse> studentCourseRepo,
-            IGenericRepository<GroupStudent> groupStudentRepo, MainDbContext dbContext)
+            IGenericRepository<GroupStudent> groupStudentRepo,
+            MainDbContext db)
         {
             _courseRepo = courseRepo;
             _paginationService = paginationService;
-            _studentCourseRepo = studentCourseRepo;
             _groupStudentRepo = groupStudentRepo;
-            _db = dbContext;
+            _db = db;
         }
 
-        public async Task<CourseDto> Add(CourseDto dto)
+        public async Task<CourseDto> Add(CreateCourseDto dto)
         {
             var course = new Course
             {
@@ -37,12 +36,7 @@ namespace Infrastructure.Services
                 Code = dto.Code,
                 Title = dto.Title,
                 Description = dto.Description,
-                InstructorName = dto.InstructorName,
-                InstructorEmail = dto.InstructorEmail,
                 ResourceLink = dto.ResourceLink,
-                Credits = dto.Credits,
-                Progress = dto.Progress,
-                NextDeadline = dto.NextDeadline,
                 Level = dto.Level
             };
 
@@ -54,6 +48,12 @@ namespace Infrastructure.Services
         {
             var course = await _courseRepo.GetById(id);
             if (course == null) throw new ArgumentException("Course not found");
+
+            var linkedGroups = await _db.Groups.AnyAsync(g => g.CourseId == id);
+            if (linkedGroups)
+            {
+                throw new InvalidOperationException("Cannot delete course while active groups are linked to it. Delete groups first.");
+            }
 
             await _courseRepo.Delete(course);
         }
@@ -72,21 +72,18 @@ namespace Infrastructure.Services
             return courses.Select(MapToDto).ToList();
         }
 
-        public async Task<CourseDto> Update(CourseDto dto, string CourseID)
+        public async Task<CourseDto> Update(UpdateCourseDto dto, string CourseID)
         {
             var course = await _courseRepo.GetById(CourseID);
             if (course == null) throw new ArgumentException("Course not found");
 
-            course.Code = dto.Code;
-            course.Title = dto.Title;
-            course.Description = dto.Description;
-            course.InstructorName = dto.InstructorName;
-            course.InstructorEmail = dto.InstructorEmail;
-            course.ResourceLink = dto.ResourceLink;
-            course.Credits = dto.Credits;
-            course.Progress = dto.Progress;
-            course.NextDeadline = dto.NextDeadline;
-            course.Level = dto.Level;
+            if (dto.Code != null) course.Code = dto.Code;
+            if (dto.Title != null) course.Title = dto.Title;
+            if (dto.Description != null) course.Description = dto.Description;
+            if (dto.ResourceLink != null) course.ResourceLink = dto.ResourceLink;
+            if (dto.Credits.HasValue) course.Credits = dto.Credits.Value;
+            if (dto.Level.HasValue) course.Level = dto.Level.Value;
+
             await _courseRepo.Update(course);
             return MapToDto(course);
         }
@@ -95,54 +92,15 @@ namespace Infrastructure.Services
         {
             return new CourseDto
             {
+                Id = course.Id,
                 Code = course.Code,
                 Title = course.Title,
                 Description = course.Description,
-                InstructorName = course.InstructorName,
-                InstructorEmail = course.InstructorEmail,
-                ResourceLink = course.ResourceLink,
                 Credits = course.Credits,
-                Progress = course.Progress,
+                ResourceLink = course.ResourceLink,
                 Level = course.Level,
-                NextDeadline = course.NextDeadline
             };
         }
-        public async Task<IReadOnlyList<CourseDto>> GetForStudent(string studentId)
-        {
-            var enrollments = await _studentCourseRepo.GetAll();
-            var mine = enrollments
-                .Where(sc => sc.StudentId == studentId)
-                .Select(sc => sc.CourseId)
-                .ToList();
-
-            var courses = new List<Course>();
-            foreach (var courseId in mine)
-            {
-                var c = await _courseRepo.GetById(courseId);
-                if (c != null)
-                    courses.Add(c);
-            }
-
-            return courses.Select(MapToDto).ToList();
-        }
-        public async Task AssignCourseAsync(string studentId, string courseId)
-        {
-            var allEnrollments = await _studentCourseRepo.GetAll();
-            if (allEnrollments.Any(sc =>
-                    sc.StudentId == studentId &&
-                    sc.CourseId == courseId))
-            {
-                throw new ArgumentException("Student is already enrolled in this course");
-            }
-            var enrollment = new StudentCourse
-            {
-                StudentId = studentId,
-                CourseId = courseId
-            };
-
-            await _studentCourseRepo.Add(enrollment);
-        }
-
         public async Task AssignStudentToGroupAsync(GroupEnrollmentDTO dto)
         {
             var group = await _db.Groups.FindAsync(dto.GroupId);
@@ -151,10 +109,11 @@ namespace Infrastructure.Services
                 throw new ArgumentException($"Group with ID '{dto.GroupId}' not found.");
             }
 
-            var existingEnrollment = await _groupStudentRepo.GetAll();
-            if (existingEnrollment.Any(gs =>
-                    gs.StudentId == dto.StudentId &&
-                    gs.GroupId == dto.GroupId))
+            var existingEnrollment = await _db.GroupStudents
+                .AsNoTracking()
+                .AnyAsync(gs => gs.StudentId == dto.StudentId && gs.GroupId == dto.GroupId);
+
+            if (existingEnrollment)
             {
                 throw new ArgumentException("Student is already enrolled in this group.");
             }
@@ -166,6 +125,69 @@ namespace Infrastructure.Services
             };
 
             await _groupStudentRepo.Add(groupStudent);
+        }
+    public async Task<BulkEnrollmentResultDTO> AssignStudentsToGroupBulkAsync(BulkGroupEnrollmentDTO dto)
+        {
+            var result = new BulkEnrollmentResultDTO
+            {
+                GroupId = dto.GroupId,
+                TotalStudentsProcessed = dto.StudentIds.Count
+            };
+
+            var group = await _db.Groups.FindAsync(dto.GroupId);
+            if (group == null)
+            {
+                result.Errors["_global"] = $"Group with ID '{dto.GroupId}' not found.";
+                return result;
+            }
+
+            var existingEnrollmentsInGroup = await _db.GroupStudents
+                .Where(gs => gs.GroupId == dto.GroupId)
+                .Select(gs => gs.StudentId)
+                .ToListAsync();
+
+            foreach (var studentId in dto.StudentIds.Distinct())
+            {
+                var student = await _db.Users.FindAsync(studentId);
+                if (student == null)
+                {
+                    result.FailedStudentIds.Add(studentId);
+                    result.Errors[studentId] = "Student not found.";
+                    continue;
+                }
+
+                if (existingEnrollmentsInGroup.Contains(studentId))
+                {
+                    result.FailedStudentIds.Add(studentId);
+                    result.Errors[studentId] = "Already enrolled in this group.";
+                    continue;
+                }
+
+                var groupStudent = new GroupStudent
+                {
+                    StudentId = studentId,
+                    GroupId = dto.GroupId
+                };
+
+                _db.GroupStudents.Add(groupStudent);
+                result.StudentsEnrolledSuccessfully++;
+            }
+
+            try
+            {
+                await _db.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                result.Errors["_global"] = $"Database save failed: {ex.Message}";
+                foreach (var studentId in dto.StudentIds.Except(result.FailedStudentIds))
+                {
+                    result.FailedStudentIds.Add(studentId);
+                    result.Errors[studentId] = "Database save failed.";
+                }
+            }
+
+            return result;
         }
     }
 }

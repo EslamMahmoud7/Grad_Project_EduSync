@@ -1,4 +1,5 @@
-﻿using Domain.DTOs;
+﻿// Infrastructure/Services/DashboardService.cs
+using Domain.DTOs;
 using Domain.Interfaces.IServices;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -27,10 +28,7 @@ namespace Infrastructure.Services
             var pendingAssignments = await _db.Assignments
                 .Where(a =>
                     a.DueDate > DateTime.UtcNow
-                    && _db.GroupStudents
-                                .Where(gs => gs.StudentId == studentId)
-                                .Select(gs => gs.Group.CourseId)
-                                .Contains(a.CourseId)
+                    && a.Group.GroupStudents.Any(gs => gs.StudentId == studentId)
                 )
                 .CountAsync();
 
@@ -63,17 +61,14 @@ namespace Infrastructure.Services
             var upcomingAssignments = await _db.Assignments
                 .Where(a =>
                     a.DueDate > DateTime.UtcNow
-                    && _db.GroupStudents
-                                .Where(gs => gs.StudentId == studentId)
-                                .Select(gs => gs.Group.CourseId)
-                                .Contains(a.CourseId)
+                    && a.Group.GroupStudents.Any(gs => gs.StudentId == studentId)
                 )
                 .OrderBy(a => a.DueDate)
                 .Take(5)
                 .Select(a => new AssignmentDTO
                 {
                     Title = a.Title,
-                    DueDate = a.DueDate
+                    DueDate = a.DueDate,
                 })
                 .ToListAsync();
 

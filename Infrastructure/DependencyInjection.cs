@@ -36,7 +36,6 @@ namespace Infrastructure
 
         public static IServiceCollection ServicesRegisteration(this IServiceCollection services)
         {
-            services.AddScoped<IGenericRepository<StudentCourse>, GenericRepository<StudentCourse>>();
             services.AddScoped<ITokenService, GenerateToken>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IAccountService, AccountService>();
@@ -55,7 +54,9 @@ namespace Infrastructure
             services.AddScoped<IGroupService, GroupService>();
             services.AddScoped<IGenericRepository<Instructor>, GenericRepository<Instructor>>();
             services.AddScoped<IInstructorService, InstructorService>();
-
+            services.AddScoped<IGenericRepository<AcademicRecord>, GenericRepository<AcademicRecord>>();
+            services.AddScoped<IAcademicRecordService, AcademicRecordService>();
+            services.AddScoped<IQuizService, QuizService>();
 
             return services;
         }

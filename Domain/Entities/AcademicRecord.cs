@@ -1,21 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Domain/Entities/AcademicRecord.cs
+using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace Domain.Entities
 {
     public class AcademicRecord
     {
-        public string Id { get; set; }
-        public string CourseCode { get; set; }
-        public string Title { get; set; }
-        public int Credits { get; set; }
-        public string Grade { get; set; }
-        public string Term { get; set; }
-        public string Instructor { get; set; }
-        public string StudentId { get; set; }
-    }
+        public string Id { get; set; } = Guid.NewGuid().ToString();
 
+        [Required]
+        public string StudentId { get; set; } = default!;
+        public User Student { get; set; } = default!;
+
+        [Required]
+        public string GroupId { get; set; } = default!;
+        public Group Group { get; set; } = default!;
+
+        public string? InstructorId { get; set; } 
+        public Instructor? Instructor { get; set; }
+
+        [Required]
+        [Range(0, 100, ErrorMessage = "Grade must be between 0 and 100.")]
+        public int GradeValue { get; set; }
+
+        [Required]
+        public AssessmentType AssessmentType { get; set; }
+
+        [Required]
+        [StringLength(50)]
+        public string Term { get; set; } = default!;
+
+        public DateTime DateRecorded { get; set; } = DateTime.UtcNow;
+        public AcademicRecordStatus Status { get; set; } = AcademicRecordStatus.Final;
+    }
 }

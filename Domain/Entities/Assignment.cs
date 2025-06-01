@@ -13,7 +13,7 @@ namespace Domain.Entities
         public string Description { get; set; } = default!;
         public DateTime DueDate { get; set; }
         public AssignmentStatus Status { get; set; } = AssignmentStatus.Pending;
-        public string CourseId { get; set; } = default!;
-        public Course Course { get; set; } = default!;
+        public string GroupId { get; set; } = default!;
+        public Group Group { get; set; } = default!;
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
@@ -9,15 +10,14 @@ namespace Domain.DTOs
 {
     public class CourseDto
     {
-        public string Code { get; set; }
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public string InstructorName { get; set; }
-        public string InstructorEmail { get; set; }
-        public string ResourceLink { get; set; }
+        public string Id { get; set; } = default!;
+        [Required]
+        public string Code { get; set; } = default!;
+        [Required]
+        public string Title { get; set; } = default!;
+        public string? Description { get; set; }
         public int Credits { get; set; }
-        public int Progress { get; set; }
-        public int Level { get; set; } = 0;
-        public DateTime NextDeadline { get; set; }
+        public string? ResourceLink { get; set; }
+        public int Level { get; set; }
     }
 }

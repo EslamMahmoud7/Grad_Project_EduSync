@@ -77,54 +77,67 @@ namespace Infrastructure.Services.AccountService
         {
             LoginVaildation.ValidateLogin(loginDTO);
 
-            var Student = await _userManager.FindByEmailAsync(loginDTO.Email);
-            if (Student == null)
+            var user = await _userManager.FindByEmailAsync(loginDTO.Email);
+            if (user == null)
             {
                 _logger.LogError("email not exist");
                 throw new UnauthorizedAccessException("email or password is invalid");
             }
-            var result = await _signInManager.CheckPasswordSignInAsync(Student, loginDTO.Password, false);
+
+            var result = await _signInManager.CheckPasswordSignInAsync(user, loginDTO.Password, false);
 
             if (!result.Succeeded)
             {
                 _logger.LogError("email or password incorrect");
                 throw new UnauthorizedAccessException("email or password incorrect");
-
             }
+
             return new UserDTO()
             {
-                FirstName = Student.FirstName ?? "unknown fname",
-                LastName = Student.LastName ?? "unknown lname",
+                FirstName = user.FirstName ?? "unknown fname",
+                LastName = user.LastName ?? "unknown lname",
                 Email = loginDTO.Email,
-                Token = await _tokenService.GenerateJWTToken(Student),
-                Id = Student.Id
+                Token = await _tokenService.GenerateJWTToken(user),
+                Id = user.Id,
+                Role = user.Role
             };
         }
+
         public async Task<UserDTO> Register(RegisterationDTO registerationDTO)
         {
             RegistrationVaildation.RegisterVaildation(registerationDTO);
 
             if (await _userManager.FindByEmailAsync(registerationDTO.Email) != null)
+            {
                 _logger.LogError("email already exist");
+                throw new ArgumentException("Email already exists");
+            }
 
-            var Student = new User()
+            var user = new User()
             {
                 FirstName = registerationDTO.FirstName,
                 LastName = registerationDTO.LastName,
                 Email = registerationDTO.Email,
-                UserName = registerationDTO.Email.Split('@')[0]
+                UserName = registerationDTO.Email.Split('@')[0],
+                Role = UserRole.Student
             };
 
-            var result = await _userManager.CreateAsync(Student, registerationDTO.Password);
-            if (!result.Succeeded) result.Errors.Select(error => error.Description);
+            var result = await _userManager.CreateAsync(user, registerationDTO.Password);
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(error => error.Description));
+                _logger.LogError($"User registration failed: {errors}");
+                throw new InvalidOperationException($"User registration failed: {errors}");
+            }
 
             return new UserDTO()
             {
                 FirstName = registerationDTO.FirstName,
                 LastName = registerationDTO.LastName,
                 Email = registerationDTO.Email,
-                Password = registerationDTO.Password,
-                Token = await _tokenService.GenerateJWTToken(Student)
+                Token = await _tokenService.GenerateJWTToken(user),
+                Id = user.Id,
+                Role = user.Role
             };
         }
         public async Task<string> ResetPassword(ResetPasswordDTO resetPasswordDTO)

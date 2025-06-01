@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Domain.Entities;
+using System.ComponentModel.DataAnnotations;
 
 namespace Grad_Project_LMS.Controller
 {
@@ -10,7 +11,6 @@ namespace Grad_Project_LMS.Controller
         public string Token { get; set; }
         [EmailAddress]
         public string Email { get; set; }
-
-        public string Password { get; set; }
+        public UserRole Role { get; set; }
     }
 }

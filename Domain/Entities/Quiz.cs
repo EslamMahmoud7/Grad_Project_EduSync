@@ -1,25 +1,37 @@
-﻿using System;
+﻿// Domain/Entities/Quiz.cs
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
 
 namespace Domain.Entities
 {
     public class Quiz
     {
-        public string Id { get; set; }
-        public string Title { get; set; }
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+
+        [Required]
+        [StringLength(200)]
+        public string Title { get; set; } = default!;
+
+        public string? Description { get; set; }
+
+        [Required]
+        public string GroupId { get; set; } = default!;
+        public Group Group { get; set; } = default!;
+
+        [Required]
+        public string InstructorId { get; set; } = default!;
+        public User Instructor { get; set; } = default!;
+
         public DateTime DueDate { get; set; }
-        public QuizStatus Status { get; set; }
-        public DateTime? SubmissionDate { get; set; }
-        public int? Score { get; set; }
+        public int DurationMinutes { get; set; }
+        public bool ShuffleQuestions { get; set; } = false;
+        public int MaxAttempts { get; set; } = 1;
+        public bool IsPublished { get; set; } = false;
+        public DateTime DateCreated { get; set; } = DateTime.UtcNow;
+        public DateTime? DateModified { get; set; }
 
-        public int CourseId { get; set; }
-        public Course Course { get; set; }
-
-        public string StudentProfileId { get; set; }
-        public string CreatedByAdminId { get; set; }
-        public User CreatedByAdmin { get; set; }
+        public ICollection<QuizModel> QuizModels { get; set; } = new List<QuizModel>();
+        public ICollection<StudentQuizAttempt> Attempts { get; set; } = new List<StudentQuizAttempt>();
     }
 }

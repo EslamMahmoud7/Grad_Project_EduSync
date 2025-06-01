@@ -1,5 +1,4 @@
-﻿// Infrastructure/Services/GroupService.cs
-using Domain.DTOs;
+﻿using Domain.DTOs;
 using Domain.Entities;
 using Domain.Interfaces.IServices;
 using Domain.Interfaces.Repositories;
@@ -152,6 +151,20 @@ namespace Infrastructure.Services
 
             return await GetGroupByIdAsync(group.Id);
         }
+        public async Task<IReadOnlyList<GroupDTO>> GetGroupsByStudentIdAsync(string studentId)
+        {
+            var groups = await _db.GroupStudents
+                .Where(gs => gs.StudentId == studentId)
+                .Include(gs => gs.Group)
+                    .ThenInclude(g => g.Course)
+                .Include(gs => gs.Group.Instructor)
+                .Include(gs => gs.Group.GroupStudents) 
+                .Select(gs => gs.Group) 
+                .AsNoTracking() 
+                .ToListAsync();
+
+            return groups.Select(g => MapToDto(g)).ToList();
+        }
 
         private GroupDTO MapToDto(Group group)
         {
@@ -160,6 +173,11 @@ namespace Infrastructure.Services
                 Id = group.Id,
                 CourseId = group.CourseId,
                 CourseTitle = group.Course?.Title ?? "N/A",
+                CourseDescription = group.Course?.Description,
+                CourseCredits = group.Course?.Credits ?? 0,
+                CourseResourceLink = group.Course?.ResourceLink,
+                CourseLevel = group.Course?.Level ?? 0,
+
                 Label = group.Label,
                 StartTime = group.StartTime,
                 EndTime = group.EndTime,
@@ -167,6 +185,8 @@ namespace Infrastructure.Services
                 Instructor = group.Instructor != null ? new InstructorDTO
                 {
                     Id = group.Instructor.Id,
+                    FirstName = group.Instructor.FirstName,
+                    LastName = group.Instructor.LastName,
                     Email = group.Instructor.Email
                 } : null,
                 NumberOfStudents = group.GroupStudents?.Count ?? 0

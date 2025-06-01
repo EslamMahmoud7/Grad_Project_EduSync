@@ -13,5 +13,6 @@ namespace Domain.Interfaces.IServices
         Task DeleteGroupAsync(string id);
         Task<IReadOnlyList<GroupDTO>> GetGroupsByCourseIdAsync(string courseId);
         Task<IReadOnlyList<GroupDTO>> GetGroupsByInstructorIdAsync(string instructorId);
+        Task<IReadOnlyList<GroupDTO>> GetGroupsByStudentIdAsync(string studentId);
     }
 }

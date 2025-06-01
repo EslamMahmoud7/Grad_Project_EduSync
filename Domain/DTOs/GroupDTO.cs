@@ -11,6 +11,10 @@ namespace Domain.DTOs
         public string Id { get; set; } = default!;
         public string CourseId { get; set; } = default!;
         public string CourseTitle { get; set; } = default!;
+        public string? CourseDescription { get; set; }
+        public int CourseCredits { get; set; }
+        public string? CourseResourceLink { get; set; }
+        public int CourseLevel { get; set; }
         public string Label { get; set; } = default!;
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }

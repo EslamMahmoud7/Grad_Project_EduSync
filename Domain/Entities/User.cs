@@ -13,14 +13,16 @@ namespace Domain.Entities
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public UserRole Role { get; set; }
-        public DateTime JoinedDate { get; set; } = DateTime.UtcNow;
-        public string? Institution { get; set; }
+        public DateTime JoinedDate { get; set; } = default!;
+        public string Institution { get; set; } = default!;
         public int TotalCourses { get; set; }
         public double GPA { get; set; }
-        public string? Status { get; set; }
-        public string? AvatarUrl { get; set; }
-        public ICollection<StudentCourse> StudentCourses { get; set; } = new List<StudentCourse>();
+        public string Status { get; set; } = default!;
+        public string AvatarUrl { get; set; } = default!;
         public ICollection<GroupStudent> GroupStudents { get; set; } = new List<GroupStudent>();
+        public IList<string> Achievements { get; set; } = new List<string>();
+        public IList<string> RecentActivity { get; set; } = new List<string>();
+        public IList<string> SocialLinks { get; set; } = new List<string>();
 
     }
 

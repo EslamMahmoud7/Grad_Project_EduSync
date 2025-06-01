@@ -8,13 +8,11 @@ namespace Domain.DTOs
 {
     public class UpdateProfileDTO
     {
-        public string FirstName { get; set; } = default!;
-        public string LastName { get; set; } = default!;
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
         public string? PhoneNumber { get; set; }
         public string? Institution { get; set; }
-        public string? AvatarUrl { get; set; }
-        public int? TotalCourses { get; set; }
-        public double? GPA { get; set; }
         public string? Status { get; set; }
+        public string? AvatarUrl { get; set; }
     }
 }

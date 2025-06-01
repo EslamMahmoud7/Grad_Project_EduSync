@@ -13,7 +13,7 @@ namespace Domain.DTOs
 
         public string Email { get; set; }
         public string Phone { get; set; }
-        public string JoinedDate { get; set; }
+        public DateTime JoinedDate { get; set; }
         public string Institution { get; set; }
         public int TotalCourses { get; set; }
         public double GPA { get; set; }

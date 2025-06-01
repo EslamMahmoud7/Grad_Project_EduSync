@@ -8,14 +8,14 @@ namespace Domain.Entities
 {
     public class Material
     {
-        public string Id { get; set; }
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public string FileUrl { get; set; }
-        public DateTime UploadDate { get; set; }
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string Title { get; set; } = default!;
+        public string Description { get; set; } = default!;
+        public string FileUrl { get; set; } = default!;
+        public DateTime UploadDate { get; set; } = DateTime.UtcNow;
 
-        public int CourseId { get; set; }
-        public Course Course { get; set; }
+        public string GroupId { get; set; } = default!;
+        public Group Group { get; set; } = default!;
     }
 
 }

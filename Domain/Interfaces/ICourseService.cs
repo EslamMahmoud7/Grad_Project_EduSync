@@ -8,14 +8,12 @@ namespace Domain.Interfaces.IServices
 {
     public interface ICourseService
     {
-        Task<CourseDto> Add(CourseDto dto);
+        Task<CourseDto> Add(CreateCourseDto dto);
         Task Delete(string id);
         Task<CourseDto> Get(string id);
         Task<IReadOnlyList<CourseDto>> GetAll();
-        Task<CourseDto> Update(CourseDto dto, string CourseID);
-        Task<IReadOnlyList<CourseDto>> GetForStudent(string studentId);
-        Task AssignCourseAsync(string studentId, string courseId);
-
+        Task<CourseDto> Update(UpdateCourseDto dto, string CourseID);
         Task AssignStudentToGroupAsync(GroupEnrollmentDTO dto);
+        Task<BulkEnrollmentResultDTO> AssignStudentsToGroupBulkAsync(BulkGroupEnrollmentDTO dto);
     }
 }
