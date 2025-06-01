@@ -19,6 +19,7 @@ namespace Domain.DTOs
         public DateTime EndTime { get; set; }
         public string? Location { get; set; }
         public string? InstructorId { get; set; }
+        public int? MaxStudents { get; set; }
     }
 
 }

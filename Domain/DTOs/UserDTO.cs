@@ -12,5 +12,6 @@ namespace Grad_Project_LMS.Controller
         [EmailAddress]
         public string Email { get; set; }
         public UserRole Role { get; set; }
+        public string FullName => $"{FirstName} {LastName}";
     }
 }

@@ -161,7 +161,6 @@ namespace Grad_Project_LMS.Controller
         }
 
     [HttpPost("assign-students-to-group-bulk")]
-        [Authorize(Roles = "Admin, Instructor")]
         public async Task<ActionResult<BulkEnrollmentResultDTO>> AssignStudentsToGroupBulk([FromBody] BulkGroupEnrollmentDTO dto)
         {
             if (!ModelState.IsValid)

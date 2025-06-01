@@ -57,6 +57,8 @@ namespace Infrastructure
             services.AddScoped<IGenericRepository<AcademicRecord>, GenericRepository<AcademicRecord>>();
             services.AddScoped<IAcademicRecordService, AcademicRecordService>();
             services.AddScoped<IQuizService, QuizService>();
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IAdminDashboardService, AdminDashboardService>();
 
             return services;
         }

@@ -53,7 +53,6 @@ namespace Infrastructure.Services
 
         public async Task<GroupDTO> AddGroupAsync(CreateGroupDTO dto)
         {
-            // 1. Validate that the referenced Course exists
             var course = await _db.Courses.FindAsync(dto.CourseId);
             if (course == null)
                 throw new ArgumentException($"Course with ID '{dto.CourseId}' not found.");
