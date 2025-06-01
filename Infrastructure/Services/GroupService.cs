@@ -53,16 +53,17 @@ namespace Infrastructure.Services
 
         public async Task<GroupDTO> AddGroupAsync(CreateGroupDTO dto)
         {
+            // 1. Validate that the referenced Course exists
             var course = await _db.Courses.FindAsync(dto.CourseId);
-            if (course == null) throw new ArgumentException($"Course with ID '{dto.CourseId}' not found.");
+            if (course == null)
+                throw new ArgumentException($"Course with ID '{dto.CourseId}' not found.");
 
-            if (!string.IsNullOrEmpty(dto.InstructorId))
+            if (!string.IsNullOrWhiteSpace(dto.InstructorId))
             {
-                var instructorUser = await _db.Users.FirstOrDefaultAsync(u => u.Id == dto.InstructorId);
-                if (instructorUser == null)
-                {
-                    throw new ArgumentException($"Instructor (User) with ID '{dto.InstructorId}' not found.");
-                }
+                var instructor = await _db.Instructors
+                    .FirstOrDefaultAsync(i => i.Id == dto.InstructorId);
+                if (instructor == null)
+                    throw new ArgumentException($"Instructor with ID '{dto.InstructorId}' not found.");
             }
 
             var group = new Group
@@ -75,25 +76,34 @@ namespace Infrastructure.Services
                 Location = dto.Location,
                 InstructorId = dto.InstructorId
             };
+
             await _groupRepo.Add(group);
             return await GetGroupByIdAsync(group.Id);
         }
+
 
         public async Task<GroupDTO> UpdateGroupAsync(string id, UpdateGroupDTO dto)
         {
             var group = await _db.Groups.FindAsync(id);
             if (group == null)
-            {
                 throw new ArgumentException($"Group with ID '{id}' not found.");
+
+            if (!string.IsNullOrWhiteSpace(dto.CourseId) && group.CourseId != dto.CourseId)
+            {
+                var course = await _db.Courses.FindAsync(dto.CourseId);
+                if (course == null)
+                    throw new ArgumentException($"Course with ID '{dto.CourseId}' not found.");
+
+                group.CourseId = dto.CourseId;
             }
 
             if (dto.InstructorId != null && group.InstructorId != dto.InstructorId)
             {
-                var instructorUser = await _db.Users.FirstOrDefaultAsync(u => u.Id == dto.InstructorId);
-                if (instructorUser == null && !string.IsNullOrEmpty(dto.InstructorId))
-                {
-                    throw new ArgumentException($"Instructor (User) with ID '{dto.InstructorId}' not found.");
-                }
+                var instructor = await _db.Instructors
+                    .FirstOrDefaultAsync(i => i.Id == dto.InstructorId);
+                if (instructor == null)
+                    throw new ArgumentException($"Instructor with ID '{dto.InstructorId}' not found.");
+
                 group.InstructorId = dto.InstructorId;
             }
             else if (dto.InstructorId == null && group.InstructorId != null)
@@ -101,12 +111,41 @@ namespace Infrastructure.Services
                 group.InstructorId = null;
             }
 
-            if (dto.Label != null) group.Label = dto.Label;
-            if (dto.Location != null) group.Location = dto.Location;
+            if (!string.IsNullOrWhiteSpace(dto.StartTime))
+            {
+                if (DateTime.TryParse(dto.StartTime, out var parsedStart))
+                {
+                    group.StartTime = parsedStart;
+                }
+                else
+                {
+                    throw new ArgumentException($"startTime '{dto.StartTime}' is not a valid DateTime.");
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(dto.EndTime))
+            {
+                if (DateTime.TryParse(dto.EndTime, out var parsedEnd))
+                {
+                    group.EndTime = parsedEnd;
+                }
+                else
+                {
+                    throw new ArgumentException($"endTime '{dto.EndTime}' is not a valid DateTime.");
+                }
+            }
+
+            if (dto.Label != null)
+                group.Label = dto.Label;
+
+            if (dto.Location != null)
+                group.Location = dto.Location;
+
 
             await _groupRepo.Update(group);
             return await GetGroupByIdAsync(id);
         }
+
 
         private GroupDTO MapToDto(Group group)
         {
@@ -117,7 +156,6 @@ namespace Infrastructure.Services
                 CourseTitle = group.Course?.Title ?? "N/A",
                 CourseDescription = group.Course?.Description,
                 CourseCredits = group.Course?.Credits ?? 0,
-                CourseResourceLink = group.Course?.ResourceLink,
                 CourseLevel = group.Course?.Level ?? 0,
                 Label = group.Label,
                 StartTime = group.StartTime,

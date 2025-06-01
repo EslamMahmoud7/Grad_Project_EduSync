@@ -14,7 +14,6 @@ namespace Domain.Entities
         public string Description { get; set; } = default!;
         public int Credits { get; set; }
 
-        public string ResourceLink { get; set; } = string.Empty;
         public int Level { get; set; } = 1;
         public ICollection<Group> Groups { get; set; } = new List<Group>();
     }

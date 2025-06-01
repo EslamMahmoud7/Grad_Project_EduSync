@@ -36,8 +36,8 @@ namespace Infrastructure.Services
                 Code = dto.Code,
                 Title = dto.Title,
                 Description = dto.Description,
-                ResourceLink = dto.ResourceLink,
-                Level = dto.Level
+                Level = dto.Level,
+                Credits = dto.Credits
             };
 
             await _courseRepo.Add(course);
@@ -80,7 +80,6 @@ namespace Infrastructure.Services
             if (dto.Code != null) course.Code = dto.Code;
             if (dto.Title != null) course.Title = dto.Title;
             if (dto.Description != null) course.Description = dto.Description;
-            if (dto.ResourceLink != null) course.ResourceLink = dto.ResourceLink;
             if (dto.Credits.HasValue) course.Credits = dto.Credits.Value;
             if (dto.Level.HasValue) course.Level = dto.Level.Value;
 
@@ -97,7 +96,6 @@ namespace Infrastructure.Services
                 Title = course.Title,
                 Description = course.Description,
                 Credits = course.Credits,
-                ResourceLink = course.ResourceLink,
                 Level = course.Level,
             };
         }

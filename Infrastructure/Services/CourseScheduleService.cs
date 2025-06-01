@@ -38,9 +38,9 @@ public class CourseScheduleService : ICourseScheduleService
 
                 return new CourseScheduleDTO
                 {
-                    Date = g.StartTime.Date,
-                    Day = g.StartTime.DayOfWeek.ToString(),
-                    Time = g.StartTime.ToString("h:mm tt"),
+                    Date = g.StartTime,
+                    Day = g.StartTime.ToString(),
+                    Time = g.StartTime.ToString(),
                     Subject = g.Course.Title,
                     Room = g.Location ?? "N/A",
                     Doctor = doctorDisplayName

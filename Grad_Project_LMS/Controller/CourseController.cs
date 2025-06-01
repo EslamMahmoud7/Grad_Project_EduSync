@@ -148,7 +148,6 @@ namespace Grad_Project_LMS.Controller
                                             Title = g.CourseTitle,
                                             Description = g.CourseDescription,
                                             Credits = g.CourseCredits,
-                                            ResourceLink = g.CourseResourceLink,
                                             Level = g.CourseLevel
                                         })
                                         .DistinctBy(c => c.Id)

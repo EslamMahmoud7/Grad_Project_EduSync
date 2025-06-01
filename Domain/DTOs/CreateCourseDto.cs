@@ -15,7 +15,6 @@ namespace Domain.DTOs
         public string Title { get; set; } = default!;
         public string? Description { get; set; }
         public int Credits { get; set; }
-        public string? ResourceLink { get; set; }
         public int Level { get; set; }
     }
 }
