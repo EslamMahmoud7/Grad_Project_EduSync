@@ -18,8 +18,6 @@ namespace Infrastructure.Data
         public DbSet<Quiz> Quizzes { get; set; }
         public DbSet<Material> Materials { get; set; }
         public DbSet<Announcement> Announcements { get; set; }
-
-        public DbSet<Instructor> Instructors { get; set; }
         public DbSet<Group> Groups { get; set; }
         public DbSet<GroupStudent> GroupStudents { get; set; }
         public DbSet<AcademicRecord> AcademicRecords { get; set; }
@@ -75,12 +73,7 @@ namespace Infrastructure.Data
                 .HasForeignKey(gs => gs.GroupId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<Group>()
-                .HasOne(g => g.Instructor)
-                .WithMany(i => i.Groups)
-                .HasForeignKey(g => g.InstructorId)
-                .IsRequired(false)
-                .OnDelete(DeleteBehavior.SetNull);
+            
             modelBuilder.Entity<AcademicRecord>()
                 .Property(ar => ar.Status)
                 .HasConversion<byte>();
@@ -100,12 +93,12 @@ namespace Infrastructure.Data
                 .HasForeignKey(ar => ar.GroupId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<AcademicRecord>()
-                .HasOne(ar => ar.Instructor)
-                .WithMany()
-                .HasForeignKey(ar => ar.InstructorId)
-                .IsRequired(false)
-                .OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<Group>()
+    .HasOne(g => g.Instructor)
+    .WithMany()
+    .HasForeignKey(g => g.InstructorId)
+    .IsRequired(false)
+    .OnDelete(DeleteBehavior.SetNull);
             modelBuilder.Entity<Quiz>(entity =>
             {
                 entity.HasOne(q => q.Group)

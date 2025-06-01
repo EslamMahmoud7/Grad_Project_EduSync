@@ -52,13 +52,14 @@ namespace Infrastructure
             services.AddScoped<IGenericRepository<GroupStudent>, GenericRepository<GroupStudent>>();
             services.AddScoped<IGenericRepository<Group>, GenericRepository<Group>>();
             services.AddScoped<IGroupService, GroupService>();
-            services.AddScoped<IGenericRepository<Instructor>, GenericRepository<Instructor>>();
             services.AddScoped<IInstructorService, InstructorService>();
             services.AddScoped<IGenericRepository<AcademicRecord>, GenericRepository<AcademicRecord>>();
             services.AddScoped<IAcademicRecordService, AcademicRecordService>();
             services.AddScoped<IQuizService, QuizService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAdminDashboardService, AdminDashboardService>();
+            services.AddScoped<IInstructorDashboardService, InstructorDashboardService>();
+
 
             return services;
         }

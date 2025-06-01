@@ -25,6 +25,7 @@ namespace Domain.DTOs
         [Phone]
         [StringLength(20)]
         public string? PhoneNumber { get; set; }
+        public string? Password { get; set; }
     }
 
 }

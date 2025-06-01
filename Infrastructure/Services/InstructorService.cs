@@ -1,8 +1,8 @@
-﻿// Infrastructure/Services/InstructorService.cs
-using Domain.DTOs;
+﻿using Domain.DTOs;
 using Domain.Entities;
 using Domain.Interfaces.IServices;
-using Domain.Interfaces.Repositories;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,96 +12,125 @@ namespace Infrastructure.Services
 {
     public class InstructorService : IInstructorService
     {
-        private readonly IGenericRepository<Instructor> _instructorRepo;
+        private readonly UserManager<User> _userManager;
 
-        public InstructorService(IGenericRepository<Instructor> instructorRepo)
+        public InstructorService(UserManager<User> userManager)
         {
-            _instructorRepo = instructorRepo;
+            _userManager = userManager;
         }
 
         public async Task<InstructorDTO> AddInstructorAsync(CreateInstructorDTO dto)
         {
-            var existingInstructor = (await _instructorRepo.GetAll()).FirstOrDefault(i => i.Email == dto.Email);
-            if (existingInstructor != null)
+            var existingUserByEmail = await _userManager.FindByEmailAsync(dto.Email);
+            if (existingUserByEmail != null)
             {
-                throw new ArgumentException($"Instructor with email '{dto.Email}' already exists.");
+
+                throw new ArgumentException($"A user with email '{dto.Email}' already exists.");
             }
 
-            var instructor = new Instructor
+            var instructorUser = new User
             {
                 Id = Guid.NewGuid().ToString(),
                 FirstName = dto.FirstName,
                 LastName = dto.LastName,
                 Email = dto.Email,
-                PhoneNumber = dto.PhoneNumber
+                UserName = dto.Email,
+                PhoneNumber = dto.PhoneNumber,
+                Role = UserRole.Instructor,
+                EmailConfirmed = true,
+                JoinedDate = DateTime.UtcNow, 
             };
 
-            await _instructorRepo.Add(instructor);
-            return MapToDto(instructor);
+            if (string.IsNullOrEmpty(dto.Password))
+            {
+                throw new ArgumentException("Password is required to create an instructor user.");
+            }
+            var result = await _userManager.CreateAsync(instructorUser, dto.Password);
+
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new InvalidOperationException($"Failed to create instructor user: {errors}");
+            }
+
+            return MapUserToInstructorDto(instructorUser);
         }
 
         public async Task DeleteInstructorAsync(string id)
         {
-            var instructor = await _instructorRepo.GetById(id);
-            if (instructor == null)
+            var instructorUser = await _userManager.FindByIdAsync(id);
+            if (instructorUser == null || instructorUser.Role != UserRole.Instructor)
             {
-                throw new ArgumentException($"Instructor with ID '{id}' not found.");
+                throw new ArgumentException($"Instructor (User) with ID '{id}' not found or is not an Instructor.");
             }
 
-            await _instructorRepo.Delete(instructor);
+            var result = await _userManager.DeleteAsync(instructorUser);
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new InvalidOperationException($"Failed to delete instructor user: {errors}");
+            }
         }
 
         public async Task<IReadOnlyList<InstructorDTO>> GetAllInstructorsAsync()
         {
-            var instructors = await _instructorRepo.GetAll();
-            return instructors.Select(MapToDto).ToList();
+            var instructorUsers = await _userManager.Users
+                                        .Where(u => u.Role == UserRole.Instructor)
+                                        .ToListAsync();
+            return instructorUsers.Select(MapUserToInstructorDto).ToList();
         }
 
         public async Task<InstructorDTO> GetInstructorByIdAsync(string id)
         {
-            var instructor = await _instructorRepo.GetById(id);
-            if (instructor == null)
+            var instructorUser = await _userManager.FindByIdAsync(id);
+            if (instructorUser == null || instructorUser.Role != UserRole.Instructor)
             {
-                throw new ArgumentException($"Instructor with ID '{id}' not found.");
+                throw new ArgumentException($"Instructor (User) with ID '{id}' not found or is not an Instructor.");
             }
-            return MapToDto(instructor);
+            return MapUserToInstructorDto(instructorUser);
         }
 
         public async Task<InstructorDTO> UpdateInstructorAsync(string id, UpdateInstructorDTO dto)
         {
-            var instructor = await _instructorRepo.GetById(id);
-            if (instructor == null)
+            var instructorUser = await _userManager.FindByIdAsync(id);
+            if (instructorUser == null || instructorUser.Role != UserRole.Instructor)
             {
-                throw new ArgumentException($"Instructor with ID '{id}' not found.");
+                throw new ArgumentException($"Instructor (User) with ID '{id}' not found or is not an Instructor.");
             }
 
-            if (!string.IsNullOrEmpty(dto.Email) && dto.Email != instructor.Email)
+            if (!string.IsNullOrEmpty(dto.Email) && dto.Email != instructorUser.Email)
             {
-                var existingInstructor = (await _instructorRepo.GetAll()).FirstOrDefault(i => i.Email == dto.Email && i.Id != id);
-                if (existingInstructor != null)
+                var existingUserWithNewEmail = await _userManager.FindByEmailAsync(dto.Email);
+                if (existingUserWithNewEmail != null && existingUserWithNewEmail.Id != id)
                 {
-                    throw new ArgumentException($"Instructor with email '{dto.Email}' already exists.");
+                    throw new ArgumentException($"Another user with email '{dto.Email}' already exists.");
                 }
+                instructorUser.Email = dto.Email;
+                instructorUser.UserName = dto.Email;
             }
 
-            if (dto.FirstName != null) instructor.FirstName = dto.FirstName;
-            if (dto.LastName != null) instructor.LastName = dto.LastName;
-            if (dto.Email != null) instructor.Email = dto.Email;
-            if (dto.PhoneNumber != null) instructor.PhoneNumber = dto.PhoneNumber;
+            if (dto.FirstName != null) instructorUser.FirstName = dto.FirstName;
+            if (dto.LastName != null) instructorUser.LastName = dto.LastName;
+            if (dto.PhoneNumber != null) instructorUser.PhoneNumber = dto.PhoneNumber;
 
-            await _instructorRepo.Update(instructor);
-            return MapToDto(instructor);
+            var result = await _userManager.UpdateAsync(instructorUser);
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new InvalidOperationException($"Failed to update instructor user: {errors}");
+            }
+            return MapUserToInstructorDto(instructorUser);
         }
 
-        private InstructorDTO MapToDto(Instructor instructor)
+        private InstructorDTO MapUserToInstructorDto(User user)
         {
             return new InstructorDTO
             {
-                Id = instructor.Id,
-                FirstName = instructor.FirstName,
-                LastName = instructor.LastName,
-                Email = instructor.Email,
-                PhoneNumber = instructor.PhoneNumber
+                Id = user.Id,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber
             };
         }
     }

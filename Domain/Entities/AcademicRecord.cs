@@ -17,7 +17,7 @@ namespace Domain.Entities
         public Group Group { get; set; } = default!;
 
         public string? InstructorId { get; set; } 
-        public Instructor? Instructor { get; set; }
+        public User? Instructor { get; set; }
 
         [Required]
         [Range(0, 100, ErrorMessage = "Grade must be between 0 and 100.")]

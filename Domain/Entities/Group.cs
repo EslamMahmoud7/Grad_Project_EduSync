@@ -11,7 +11,7 @@ namespace Domain.Entities
         public Course Course { get; set; } = default!;
 
         public string? InstructorId { get; set; }
-        public Instructor? Instructor { get; set; }
+        public User? Instructor { get; set; }
 
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }

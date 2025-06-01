@@ -2,8 +2,8 @@
 using Domain.Interfaces.IServices;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Grad_Project_LMS.Controller
 {
@@ -18,25 +18,34 @@ namespace Grad_Project_LMS.Controller
             _academicRecordService = academicRecordService;
         }
 
-        [HttpPost]
-        public async Task<ActionResult<AcademicRecordDTO>> AddAcademicRecord([FromBody] CreateAcademicRecordDTO dto)
+        [HttpPost("bulk-upload-csv")]
+        public async Task<ActionResult<BulkAddAcademicRecordsResultDTO>> AddAcademicRecordsFromCsv([FromForm] UploadAcademicRecordsCsvDTO uploadDto)
         {
+            if (uploadDto.CsvFile == null || uploadDto.CsvFile.Length == 0)
+            {
+                return BadRequest("A CSV file is required.");
+            }
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
+
             try
             {
-                var record = await _academicRecordService.AddAcademicRecordAsync(dto);
-                return CreatedAtAction(nameof(GetAcademicRecord), new { id = record.Id }, record);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
+                var result = await _academicRecordService.AddAcademicRecordsFromCsvAsync(uploadDto);
+                if (result.ErrorMessages.Any() && result.SuccessfullyAddedCount == 0)
+                {
+                    return BadRequest(result);
+                }
+                if (result.ErrorMessages.Any())
+                {
+                    return Ok(result);
+                }
+                return Ok(result);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                return StatusCode(500, new BulkAddAcademicRecordsResultDTO { ErrorMessages = new List<string> { $"Internal server error: {ex.Message}" } });
             }
         }
 

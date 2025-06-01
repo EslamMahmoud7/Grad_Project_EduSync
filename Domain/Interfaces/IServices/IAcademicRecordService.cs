@@ -6,7 +6,7 @@ namespace Domain.Interfaces.IServices
 {
     public interface IAcademicRecordService
     {
-        Task<AcademicRecordDTO> AddAcademicRecordAsync(CreateAcademicRecordDTO dto);
+        Task<BulkAddAcademicRecordsResultDTO> AddAcademicRecordsFromCsvAsync(UploadAcademicRecordsCsvDTO uploadDto);
         Task<AcademicRecordDTO> GetAcademicRecordByIdAsync(string id);
         Task<IReadOnlyList<AcademicRecordDTO>> GetAllAcademicRecordsAsync();
         Task<IReadOnlyList<AcademicRecordDTO>> GetAcademicRecordsByStudentIdAsync(string studentId);
