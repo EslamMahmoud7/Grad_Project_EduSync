@@ -69,5 +69,14 @@ namespace Domain.Entities
         C = 2,
         D = 3
     }
+    public enum MaterialType : byte
+    {
+        Link = 0,
+        Video = 1, 
+        Document = 2,   
+        Slides = 3,      
+        File = 4,        
+        Other = 5
+    }
 
 }

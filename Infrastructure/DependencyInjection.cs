@@ -59,7 +59,7 @@ namespace Infrastructure
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAdminDashboardService, AdminDashboardService>();
             services.AddScoped<IInstructorDashboardService, InstructorDashboardService>();
-
+            services.AddScoped<IMaterialService, MaterialService>();
 
             return services;
         }

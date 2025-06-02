@@ -1,12 +1,15 @@
-﻿using System;
+﻿using Domain.DTOs;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Interfaces
+namespace Domain.Interfaces.IServices
 {
-    class IMaterialService
+    public interface IMaterialService
     {
+        Task<MaterialDTO> AddMaterialAsync(CreateMaterialDTO dto);
+        Task<MaterialDTO?> GetMaterialByIdAsync(string materialId);
+        Task<IReadOnlyList<MaterialDTO>> GetMaterialsByGroupIdAsync(string groupId);
+        Task<MaterialDTO> UpdateMaterialAsync(string materialId, UpdateMaterialDTO dto);
+        Task<bool> DeleteMaterialAsync(string materialId, string requestingUserId);
     }
 }

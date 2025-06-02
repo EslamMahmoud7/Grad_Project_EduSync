@@ -130,7 +130,23 @@ namespace Infrastructure.Data
                 entity.Property(q => q.Type)
                     .HasConversion<byte>();
             });
+            modelBuilder.Entity<Material>(entity =>
+            {
+                entity.Property(m => m.FileUrl).HasMaxLength(500); 
 
+                entity.HasOne(m => m.Group)
+                    .WithMany(g => g.Materials)
+                    .HasForeignKey(m => m.GroupId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(m => m.UploadedBy)
+                    .WithMany()
+                    .HasForeignKey(m => m.UploadedById)
+                    .OnDelete(DeleteBehavior.Restrict); 
+
+                entity.Property(m => m.Type)
+                    .HasConversion<byte>();
+            });
             modelBuilder.Entity<QuestionOption>(entity =>
             {
                 entity.HasOne(qo => qo.Question)
