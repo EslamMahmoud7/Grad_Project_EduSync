@@ -14,6 +14,8 @@ namespace Domain.Entities
         public DateTime DueDate { get; set; }
         public AssignmentStatus Status { get; set; } = AssignmentStatus.Pending;
         public string GroupId { get; set; } = default!;
+        public ICollection<SubmittedAssignment> SubmittedAssignments { get; set; }
         public Group Group { get; set; } = default!;
+        public int Grade { get; set; } = 0;
     }
 }

@@ -23,7 +23,7 @@ namespace Domain.Entities
         public IList<string> Achievements { get; set; } = new List<string>();
         public IList<string> RecentActivity { get; set; } = new List<string>();
         public IList<string> SocialLinks { get; set; } = new List<string>();
-
+        public ICollection<SubmittedAssignment> SubmittedAssignments { get; set; }
     }
 
 }

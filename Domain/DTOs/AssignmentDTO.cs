@@ -17,5 +17,6 @@ namespace Domain.DTOs
         public string GroupId { get; set; } = default!;
         public string GroupLabel { get; set; } = default!;
         public string CourseTitle { get; set; } = default!;
+        public int Grade { get; set; } = 0;
     }
 }

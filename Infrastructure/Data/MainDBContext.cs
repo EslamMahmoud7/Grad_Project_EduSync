@@ -26,6 +26,7 @@ namespace Infrastructure.Data
         public DbSet<QuestionOption> QuestionOptions { get; set; } = default!;
         public DbSet<StudentQuizAttempt> StudentQuizAttempts { get; set; } = default!;
         public DbSet<StudentQuizAnswer> StudentQuizAnswers { get; set; } = default!;
+        public DbSet<SubmittedAssignment> SubmittedAssignments { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -39,6 +40,18 @@ namespace Infrastructure.Data
                 .WithMany(g => g.Assignments)
                 .HasForeignKey(a => a.GroupId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<SubmittedAssignment>()
+               .HasOne(sa => sa.Assignment)
+               .WithMany(a => a.SubmittedAssignments)
+               .HasForeignKey(sa => sa.AssignmentId)
+               .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<SubmittedAssignment>()
+                .HasOne(sa => sa.Student)
+                .WithMany(s => s.SubmittedAssignments)
+                .HasForeignKey(sa => sa.StudentId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Quiz>()
                 .HasOne(q => q.Group)

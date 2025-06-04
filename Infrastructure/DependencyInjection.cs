@@ -48,6 +48,7 @@ namespace Infrastructure
             services.AddScoped<IAssignmentService, AssignmentService>();
             services.AddScoped<IAnnouncementService, AnnouncementService>();
             services.AddScoped<IDashboardService, DashboardService>();
+            services.AddScoped<IGenericRepository<User>, GenericRepository<User>>();
             services.AddScoped<ICourseScheduleService, CourseScheduleService>();
             services.AddScoped<IGenericRepository<GroupStudent>, GenericRepository<GroupStudent>>();
             services.AddScoped<IGenericRepository<Group>, GenericRepository<Group>>();
@@ -60,6 +61,9 @@ namespace Infrastructure
             services.AddScoped<IAdminDashboardService, AdminDashboardService>();
             services.AddScoped<IInstructorDashboardService, InstructorDashboardService>();
             services.AddScoped<IMaterialService, MaterialService>();
+            services.AddScoped<ISubmittedAssignmentService, SubmittedAssignmentService>();
+            services.AddScoped<IGenericRepository<SubmittedAssignment>, GenericRepository<SubmittedAssignment>>();
+
 
             return services;
         }
