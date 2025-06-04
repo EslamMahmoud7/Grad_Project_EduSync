@@ -10,6 +10,6 @@ namespace Domain.Interfaces.IServices
         Task<MaterialDTO?> GetMaterialByIdAsync(string materialId);
         Task<IReadOnlyList<MaterialDTO>> GetMaterialsByGroupIdAsync(string groupId);
         Task<MaterialDTO> UpdateMaterialAsync(string materialId, UpdateMaterialDTO dto);
-        Task<bool> DeleteMaterialAsync(string materialId, string requestingUserId);
+        Task<bool> DeleteMaterialAsync(string materialId);
     }
 }

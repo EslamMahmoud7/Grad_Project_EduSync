@@ -1,5 +1,4 @@
-﻿// Infrastructure/Services/CourseScheduleService.cs
-using Domain.DTOs;
+﻿using Domain.DTOs;
 using Domain.Entities;
 using Domain.Interfaces.IServices;
 using Infrastructure.Data;
@@ -24,7 +23,7 @@ public class CourseScheduleService : ICourseScheduleService
             .Where(gs => gs.StudentId == studentId)
             .Include(gs => gs.Group)
                 .ThenInclude(g => g.Course)
-            .Include(gs => gs.Group.Instructor)
+            .Include(gs => gs.Group.Instructor) 
             .Select(gs => gs.Group)
             .AsNoTracking()
             .ToListAsync();
@@ -38,9 +37,43 @@ public class CourseScheduleService : ICourseScheduleService
 
                 return new CourseScheduleDTO
                 {
+                    GroupId = g.Id,
+                    Date = g.StartTime, 
+                    Day = g.StartTime.ToString("dddd"),
+                    Time = g.StartTime.ToString("hh:mm tt"),
+                    Subject = g.Course.Title,
+                    Room = g.Location ?? "N/A",
+                    Doctor = doctorDisplayName
+                };
+            })
+            .OrderBy(dto => dto.Date)
+            .ToList();
+
+        return scheduledLectures;
+    }
+
+    public async Task<IReadOnlyList<CourseScheduleDTO>> GetForInstructorAsync(string instructorId)
+    {
+        var instructorGroups = await _db.Groups
+            .Where(g => g.InstructorId == instructorId)
+            .Include(g => g.Course)
+            .Include(g => g.Instructor)
+            .AsNoTracking()
+            .ToListAsync();
+
+        var scheduledLectures = instructorGroups
+            .Select(g =>
+            {
+                var doctorDisplayName = g.Instructor != null
+                    ? $"{g.Instructor.FirstName} {g.Instructor.LastName}"
+                    : "N/A";
+
+                return new CourseScheduleDTO
+                {
+                    GroupId = g.Id,
                     Date = g.StartTime,
-                    Day = g.StartTime.ToString(),
-                    Time = g.StartTime.ToString(),
+                    Day = g.StartTime.ToString("dddd"),
+                    Time = g.StartTime.ToString("hh:mm tt"),
                     Subject = g.Course.Title,
                     Room = g.Location ?? "N/A",
                     Doctor = doctorDisplayName

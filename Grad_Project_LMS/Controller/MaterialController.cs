@@ -77,13 +77,13 @@ namespace Grad_Project_LMS.Controller
         }
 
         [HttpDelete("{materialId}")]
-        public async Task<IActionResult> DeleteMaterial(string materialId, [FromQuery] string requestingUserId)
+        public async Task<IActionResult> DeleteMaterial(string materialId)
         {
-            if (string.IsNullOrEmpty(materialId) || string.IsNullOrEmpty(requestingUserId))
+            if (string.IsNullOrEmpty(materialId))
                 return BadRequest("Material ID and Requesting User ID are required.");
             try
             {
-                var success = await _materialService.DeleteMaterialAsync(materialId, requestingUserId);
+                var success = await _materialService.DeleteMaterialAsync(materialId);
                 if (!success) return NotFound($"Material with ID '{materialId}' not found or delete failed.");
                 return NoContent();
             }

@@ -129,7 +129,7 @@ namespace Infrastructure.Services
             return MapMaterialToDto(material);
         }
 
-        public async Task<bool> DeleteMaterialAsync(string materialId, string requestingUserId)
+        public async Task<bool> DeleteMaterialAsync(string materialId)
         {
             var material = await _context.Materials
                 .Include(m => m.Group)
@@ -137,11 +137,6 @@ namespace Infrastructure.Services
 
             if (material == null)
                 return false;
-
-            var deleter = await _context.Users.FirstOrDefaultAsync(u => u.Id == requestingUserId && u.Role == UserRole.Instructor);
-            if (deleter == null)
-                throw new ArgumentException($"Deleting user (Instructor) with ID '{requestingUserId}' not found or is not an instructor.");
-
 
             _context.Materials.Remove(material);
             await _context.SaveChangesAsync();

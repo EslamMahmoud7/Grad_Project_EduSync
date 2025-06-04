@@ -2,7 +2,6 @@
 using Domain.DTOs;
 using Domain.Entities;
 using Domain.Interfaces;
-using Grad_Project_LMS.Controller;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -97,7 +96,6 @@ namespace Infrastructure.Services.AccountService
                 FirstName = user.FirstName ?? "unknown fname",
                 LastName = user.LastName ?? "unknown lname",
                 Email = loginDTO.Email,
-                Token = await _tokenService.GenerateJWTToken(user),
                 Id = user.Id,
                 Role = user.Role
             };
@@ -135,7 +133,6 @@ namespace Infrastructure.Services.AccountService
                 FirstName = registerationDTO.FirstName,
                 LastName = registerationDTO.LastName,
                 Email = registerationDTO.Email,
-                Token = await _tokenService.GenerateJWTToken(user),
                 Id = user.Id,
                 Role = user.Role
             };

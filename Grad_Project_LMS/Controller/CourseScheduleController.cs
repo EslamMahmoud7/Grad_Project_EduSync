@@ -9,9 +9,30 @@ using System.Threading.Tasks;
 public class CourseScheduleController : ControllerBase
 {
     private readonly ICourseScheduleService _svc;
-    public CourseScheduleController(ICourseScheduleService svc) => _svc = svc;
 
-    [HttpGet("mine/{studentId}")]
-    public async Task<ActionResult<IReadOnlyList<CourseScheduleDTO>>> Mine(string studentId)
-        => Ok(await _svc.GetForStudentAsync(studentId));
+    public CourseScheduleController(ICourseScheduleService courseScheduleService)
+    {
+        _svc = courseScheduleService;
+    }
+
+    [HttpGet("student/{studentId}")]
+    public async Task<ActionResult<IReadOnlyList<CourseScheduleDTO>>> GetStudentSchedule(string studentId)
+    {
+        if (string.IsNullOrWhiteSpace(studentId))
+        {
+            return BadRequest("Student ID cannot be empty.");
+        }
+        var schedule = await _svc.GetForStudentAsync(studentId);
+        return Ok(schedule);
+    }
+    [HttpGet("instructor/{instructorId}")]
+    public async Task<ActionResult<IReadOnlyList<CourseScheduleDTO>>> GetInstructorSchedule(string instructorId)
+    {
+        if (string.IsNullOrWhiteSpace(instructorId))
+        {
+            return BadRequest("Instructor ID cannot be empty.");
+        }
+        var schedule = await _svc.GetForInstructorAsync(instructorId);
+        return Ok(schedule);
+    }
 }

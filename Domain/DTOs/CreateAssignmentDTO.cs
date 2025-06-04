@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Domain.DTOs
@@ -15,6 +17,7 @@ namespace Domain.DTOs
         [Required]
         public DateTime DueDate { get; set; }
         [Required]
+        [JsonPropertyName("groupId")]
         public string GroupId { get; set; } = default!;
     }
 }
