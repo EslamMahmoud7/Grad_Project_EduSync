@@ -9,8 +9,7 @@ namespace Domain.DTOs
 {
     public class CreateCourseDto
     {
-        [Required]
-        public string Code { get; set; } = default!;
+        public string? Code { get; set; } = "BIS01";
         [Required]
         public string Title { get; set; } = default!;
         public string? Description { get; set; }
