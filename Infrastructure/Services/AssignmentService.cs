@@ -5,6 +5,7 @@ using Domain.Interfaces.IServices;
 using Domain.Interfaces.Repositories;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -48,16 +49,51 @@ public class AssignmentService : IAssignmentService
         return MapToDto(addedAssignment);
     }
 
-    public async Task<IReadOnlyList<AssignmentDTO>> GetForStudentAsync(string studentId)
+    public async Task<IReadOnlyList<StudentAssignmentDTO>> GetForStudentAsync(string studentId)
     {
-        var list = await _db.Assignments
+        var assignments = await _db.Assignments
             .Include(a => a.Group)
                 .ThenInclude(g => g.Course)
             .Where(a => a.Group.GroupStudents.Any(gs => gs.StudentId == studentId))
             .AsNoTracking()
             .ToListAsync();
 
-        return list.Select(a => MapToDto(a)).ToList();
+        var studentSubmissions = await _db.SubmittedAssignments
+            .Where(sa => sa.StudentId == studentId)
+            .ToDictionaryAsync(sa => sa.AssignmentId, sa => sa);
+
+        var studentAssignmentDtos = assignments.Select(assignment =>
+        {
+            var currentStatus = AssignmentStatus.Pending;
+            SubmittedAssignment submission = null;
+
+            if (studentSubmissions.TryGetValue(assignment.Id, out submission))
+            {
+                currentStatus = submission.Grade.HasValue
+                    ? AssignmentStatus.Submitted
+                    : AssignmentStatus.Graded;
+            }
+
+            return new StudentAssignmentDTO
+            {
+                Id = assignment.Id,
+                Title = assignment.Title,
+                Description = assignment.Description,
+                DueDate = assignment.DueDate,
+                CourseTitle = assignment.Group?.Course?.Title ?? "N/A",
+                GroupLabel = assignment.Group?.Label ?? "N/A",
+
+                SubmissionStatus = currentStatus.ToString(),
+
+                SubmissionDate = submission?.SubmissionDate,
+                Grade = submission?.Grade,
+                InstructorNotes = submission?.InstructorNotes,
+                SubmissionLink = submission?.SubmissionLink,
+                SubmissionId = submission?.Id
+            };
+        }).ToList();
+
+        return studentAssignmentDtos;
     }
 
     public async Task<AssignmentDTO> GetAssignmentByIdAsync(string id)

@@ -148,6 +148,28 @@ namespace Grad_Project_LMS.Controller
             }
         }
 
+        [HttpPost("{groupId}/remove-students")]
+        public async Task<IActionResult> RemoveStudentsFromGroup(string groupId, [FromBody] RemoveStudentsFromGroupDTO dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                await _groupService.RemoveStudentsFromGroupAsync(groupId, dto);
+                return NoContent(); 
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
         [HttpGet("{groupId}/students")]
         public async Task<ActionResult<IReadOnlyList<StudentInGroupDTO>>> GetStudentsInGroup(string groupId)
         {

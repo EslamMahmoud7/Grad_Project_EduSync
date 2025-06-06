@@ -192,6 +192,24 @@ namespace Infrastructure.Services
             if (group == null) throw new ArgumentException($"Group with ID '{id}' not found.");
             return MapToDto(group);
         }
+        public async Task RemoveStudentsFromGroupAsync(string groupId, RemoveStudentsFromGroupDTO dto)
+        {
+            var groupExists = await _db.Groups.AnyAsync(g => g.Id == groupId);
+            if (!groupExists)
+            {
+                throw new ArgumentException($"Group with ID '{groupId}' not found.");
+            }
+
+            var studentsToRemove = await _db.GroupStudents
+                .Where(gs => gs.GroupId == groupId && dto.StudentIds.Contains(gs.StudentId))
+                .ToListAsync();
+
+            if (studentsToRemove.Any())
+            {
+                _db.GroupStudents.RemoveRange(studentsToRemove);
+                await _db.SaveChangesAsync();
+            }
+        }
 
         public async Task<IReadOnlyList<GroupDTO>> GetGroupsByCourseIdAsync(string courseId)
         {

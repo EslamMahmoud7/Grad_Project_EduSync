@@ -90,6 +90,53 @@ namespace Grad_Project_LMS.Controller
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateSubmission(string id, [FromBody] UpdateSubmissionDTO dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                var updatedAssignment = await _submittedAssignmentService.UpdateSubmissionAsync(id, dto);
+                return Ok(updatedAssignment);
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message); // e.g., trying to edit a graded assignment
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteSubmission(string id)
+        {
+            try
+            {
+                await _submittedAssignmentService.DeleteSubmissionAsync(id);
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message); 
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetSubmittedAssignmentById(string id)

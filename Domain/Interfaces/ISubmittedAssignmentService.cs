@@ -14,6 +14,8 @@ namespace Domain.Interfaces
         Task<SubmittedAssignmentDTO> GradeSubmittedAssignmentAsync(string submittedAssignmentId, GradeSubmittedAssignmentDTO dto);
         Task<IReadOnlyList<SubmittedAssignmentDTO>> GetStudentSubmittedAssignmentsAsync(string studentId, string assignmentId = null);
         Task<SubmittedAssignmentDTO> GetSubmittedAssignmentByIdAsync(string id);
+        Task<SubmittedAssignmentDTO> UpdateSubmissionAsync(string submissionId, UpdateSubmissionDTO dto);
+        Task DeleteSubmissionAsync(string submissionId);
     }
 
 }

@@ -5,6 +5,7 @@ using Domain.Interfaces.IServices;
 using Domain.Interfaces.Repositories;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -113,6 +114,7 @@ public class SubmittedAssignmentService : ISubmittedAssignmentService
         submittedAssignment.Grade = dto.Grade;
         submittedAssignment.InstructorNotes = dto.InstructorNotes;
 
+
         await _submittedAssignmentRepo.Update(submittedAssignment);
 
         var gradedSubmittedAssignment = await _db.SubmittedAssignments
@@ -170,5 +172,50 @@ public class SubmittedAssignmentService : ISubmittedAssignmentService
             Grade = submittedAssignment.Grade,
             InstructorNotes = submittedAssignment.InstructorNotes
         };
+    }
+    public async Task<SubmittedAssignmentDTO> UpdateSubmissionAsync(string submissionId, UpdateSubmissionDTO dto)
+    {
+        var submittedAssignment = await _db.SubmittedAssignments.FirstOrDefaultAsync(sa => sa.Id == submissionId);
+
+        if (submittedAssignment == null)
+        {
+            throw new ArgumentException($"Submitted Assignment with ID '{submissionId}' not found.");
+        }
+
+        if (submittedAssignment.Grade.HasValue)
+        {
+            throw new InvalidOperationException("Cannot edit a submission that has already been graded.");
+        }
+
+        submittedAssignment.Title = dto.Title;
+        submittedAssignment.SubmissionLink = dto.SubmissionLink;
+        submittedAssignment.SubmissionDate = DateTime.UtcNow;
+
+        await _submittedAssignmentRepo.Update(submittedAssignment);
+
+        var updatedSubmittedAssignment = await _db.SubmittedAssignments
+            .Where(sa => sa.Id == submissionId)
+            .Include(sa => sa.Assignment) 
+            .Include(sa => sa.Student)
+            .FirstOrDefaultAsync();
+
+        return MapToDto(updatedSubmittedAssignment);
+    }
+
+    public async Task DeleteSubmissionAsync(string submissionId)
+    {
+        var submittedAssignment = await _db.SubmittedAssignments.FirstOrDefaultAsync(sa => sa.Id == submissionId);
+
+        if (submittedAssignment == null)
+        {
+            throw new ArgumentException($"Submitted Assignment with ID '{submissionId}' not found.");
+        }
+    
+        if (submittedAssignment.Grade.HasValue)
+        {
+            throw new InvalidOperationException("Cannot delete a submission that has already been graded.");
+        }
+
+        await _submittedAssignmentRepo.Delete(submittedAssignment);
     }
 }

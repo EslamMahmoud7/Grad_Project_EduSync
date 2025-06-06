@@ -40,7 +40,7 @@ public class AssignmentController : ControllerBase
     }
 
     [HttpGet("student/{studentId}")]
-    public async Task<ActionResult<IReadOnlyList<AssignmentDTO>>> GetAssignmentsForStudent(string studentId)
+    public async Task<ActionResult<IReadOnlyList<StudentAssignmentDTO>>> GetAssignmentsForStudent(string studentId)
     {
         if (string.IsNullOrWhiteSpace(studentId)) return BadRequest("Student ID cannot be empty.");
         try

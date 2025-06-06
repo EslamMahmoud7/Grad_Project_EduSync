@@ -15,5 +15,7 @@ namespace Domain.Interfaces.IServices
         Task<GroupDTO> UpdateGroupAsync(string id, UpdateGroupDTO dto);
         Task DeleteGroupAsync(string id);
         Task<IReadOnlyList<StudentInGroupDTO>> GetStudentsByGroupIdAsync(string groupId);
+        Task RemoveStudentsFromGroupAsync(string groupId, RemoveStudentsFromGroupDTO dto);
+
     }
 }
