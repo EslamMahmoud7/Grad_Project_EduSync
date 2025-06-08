@@ -60,6 +60,16 @@ namespace Infrastructure.Services
             };
         }
 
+        // This is a new helper DTO required for CSV parsing, you can place it at the bottom of the file or in its own file.
+        private class ParsedQuestionDTO
+        {
+            public string QuestionText { get; set; } = string.Empty;
+            public List<string> Options { get; set; } = new List<string>();
+            public int CorrectOptionIndex { get; set; }
+            public int Points { get; set; }
+        }
+
+
         private QuestionDTO MapQuestionToDTO(Question question, bool includeCorrectnessInfoForInstructor = false, bool forStudentAttempt = false)
         {
             return new QuestionDTO
@@ -140,7 +150,7 @@ namespace Infrastructure.Services
         public async Task<QuizModelDTO> AddQuizModelAsync(UploadQuizModelCsvDTO dto, string instructorId)
         {
             var quiz = await _db.Quizzes.Include(q => q.QuizModels)
-                                        .FirstOrDefaultAsync(q => q.Id == dto.QuizId);
+                                         .FirstOrDefaultAsync(q => q.Id == dto.QuizId);
             if (quiz == null) throw new ArgumentException("Quiz not found.");
 
             if (quiz.InstructorId != instructorId)
@@ -254,6 +264,9 @@ namespace Infrastructure.Services
 
             if (quiz == null) throw new ArgumentException("Quiz not found.");
 
+            // Although we check ownership in the controller, an extra check here is good practice.
+            if (quiz.InstructorId != instructorId) throw new ArgumentException("Quiz does not belong to the requesting instructor.");
+
             var quizDto = MapQuizToDTO(quiz, true);
             quizDto.QuizModels.ForEach(qmDto =>
             {
@@ -280,13 +293,13 @@ namespace Infrastructure.Services
         public async Task<IReadOnlyList<QuizDTO>> GetQuizzesByInstructorAsync(string instructorId)
         {
             var quizzes = await _db.Quizzes
-               .Where(q => q.InstructorId == instructorId)
-               .Include(q => q.Group)
-               .Include(q => q.Instructor)
-               .Include(q => q.QuizModels)
-               .AsNoTracking()
-               .OrderByDescending(q => q.DateCreated)
-               .ToListAsync();
+                .Where(q => q.InstructorId == instructorId)
+                .Include(q => q.Group)
+                .Include(q => q.Instructor)
+                .Include(q => q.QuizModels)
+                .AsNoTracking()
+                .OrderByDescending(q => q.DateCreated)
+                .ToListAsync();
             return quizzes.Select(q => MapQuizToDTO(q, true)).ToList();
         }
 
@@ -339,7 +352,7 @@ namespace Infrastructure.Services
             }
 
             var existingInProgressAttempt = quiz.Attempts
-                                            .FirstOrDefault(a => a.Status == QuizAttemptStatus.InProgress);
+                                                .FirstOrDefault(a => a.Status == QuizAttemptStatus.InProgress);
             if (existingInProgressAttempt != null)
             {
                 return await GetStudentQuizAttemptDetailsAsync(existingInProgressAttempt.Id, studentId, quiz.ShuffleQuestions);

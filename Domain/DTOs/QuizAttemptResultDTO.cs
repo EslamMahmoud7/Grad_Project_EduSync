@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Domain.DTOs
@@ -18,6 +19,7 @@ namespace Domain.DTOs
         public DateTime? EndTime { get; set; }
         public double? Score { get; set; }
         public int TotalPointsPossible { get; set; }
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public QuizAttemptStatus Status { get; set; }
         public List<StudentAnswerResultDTO> AnswerResults { get; set; } = new List<StudentAnswerResultDTO>();
     }

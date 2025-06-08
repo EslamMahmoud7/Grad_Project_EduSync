@@ -1,17 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace Domain.DTOs
+public class StudentQuizSubmissionDTO
 {
-    public class StudentQuizSubmissionDTO
-    {
-        [Required]
-        public string AttemptId { get; set; } = default!;
-        [Required]
-        public List<StudentAnswerSubmitDTO> Answers { get; set; } = new List<StudentAnswerSubmitDTO>();
-    }
+    [Required]
+    public string RequestingStudentId { get; set; } = default!;
+
+    [Required]
+    public string AttemptId { get; set; } = default!;
+
+    public List<StudentAnswerSubmissionDTO> Answers { get; set; } = new List<StudentAnswerSubmissionDTO>();
 }
