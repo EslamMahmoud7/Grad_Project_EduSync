@@ -1,9 +1,9 @@
 ﻿using Domain.DTOs;
-using Domain.Entities; // Required for UserRole enum
+using Domain.Entities;
 using Domain.Interfaces.IServices;
-using Domain.Interfaces.Repositories; // IGenericRepository<Group>
+using Domain.Interfaces.Repositories;
 using Infrastructure.Data;
-using Microsoft.AspNetCore.Identity; // Required for UserManager<User>
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;

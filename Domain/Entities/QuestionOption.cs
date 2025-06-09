@@ -14,5 +14,6 @@ namespace Domain.Entities
         [Required]
         public string Text { get; set; } = default!;
         public bool IsCorrect { get; set; } = false;
+        public int DisplayOrder { get; set; }
     }
 }

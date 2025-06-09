@@ -19,5 +19,6 @@ namespace Domain.DTOs
         public int AttemptsMade { get; set; }
         public bool CanAttempt => AttemptsMade < MaxAttempts;
         public string? LastAttemptStatus { get; set; }
+        public string? LastAttemptId { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Domain.DTOs;
+﻿using CsvHelper;
+using Domain.DTOs;
 using Domain.Entities;
 using Domain.Interfaces.IServices;
 using Infrastructure.Data;
@@ -6,6 +7,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Formats.Asn1;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -150,7 +153,7 @@ namespace Infrastructure.Services
         public async Task<QuizModelDTO> AddQuizModelAsync(UploadQuizModelCsvDTO dto, string instructorId)
         {
             var quiz = await _db.Quizzes.Include(q => q.QuizModels)
-                                         .FirstOrDefaultAsync(q => q.Id == dto.QuizId);
+                                .FirstOrDefaultAsync(q => q.Id == dto.QuizId);
             if (quiz == null) throw new ArgumentException("Quiz not found.");
 
             if (quiz.InstructorId != instructorId)
@@ -167,33 +170,37 @@ namespace Infrastructure.Services
             try
             {
                 using (var reader = new StreamReader(dto.CsvFile.OpenReadStream()))
+                using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
                 {
-                    string? line;
-                    bool isFirstLine = true;
-                    while ((line = await reader.ReadLineAsync()) != null)
+                    csv.Read();
+                    csv.ReadHeader();
+                    while (csv.Read())
                     {
-                        if (isFirstLine) { isFirstLine = false; continue; }
-                        var values = line.Split(',');
-                        if (values.Length < 7) continue;
                         parsedQuestions.Add(new ParsedQuestionDTO
                         {
-                            QuestionText = values[0].Trim(),
-                            Options = new List<string> { values[1].Trim(), values[2].Trim(), values[3].Trim(), values[4].Trim() },
-                            CorrectOptionIndex = int.TryParse(values[5].Trim(), out int idx) ? idx : -1,
-                            Points = int.TryParse(values[6].Trim(), out int pts) ? pts : 1
+                            QuestionText = csv.GetField<string>("QuestionText"),
+                            Options = new List<string>
+                    {
+                        csv.GetField<string>("Option1"),
+                        csv.GetField<string>("Option2"),
+                        csv.GetField<string>("Option3"),
+                        csv.GetField<string>("Option4")
+                    },
+                            CorrectOptionIndex = csv.GetField<int>("CorrectOptionIndex"),
+                            Points = csv.GetField<int>("Points")
                         });
                     }
                 }
             }
             catch (Exception ex)
             {
-                throw new ArgumentException($"Error parsing CSV file: {ex.Message}");
+                throw new ArgumentException($"Error parsing CSV file: {ex.Message}. Make sure the headers (QuestionText, Option1, etc.) are correct.");
             }
 
             if (!parsedQuestions.Any()) throw new ArgumentException("CSV file contains no valid questions or is improperly formatted.");
-            if (parsedQuestions.Any(pq => pq.CorrectOptionIndex < 0 || pq.CorrectOptionIndex >= pq.Options.Count))
+            if (parsedQuestions.Any(pq => pq.CorrectOptionIndex < 0 || pq.CorrectOptionIndex >= 4))
             {
-                throw new ArgumentException("CSV contains one or more questions with an invalid CorrectOptionIndex.");
+                throw new ArgumentException("CSV contains one or more questions with an invalid CorrectOptionIndex. The index must be between 0 and 3.");
             }
 
             var quizModel = new QuizModel
@@ -215,7 +222,7 @@ namespace Infrastructure.Services
                     Type = QuestionType.MultipleChoiceSingleAnswer
                 };
                 _db.Questions.Add(question);
-                await _db.SaveChangesAsync();
+                await _db.SaveChangesAsync(); 
 
                 for (int i = 0; i < pq.Options.Count; i++)
                 {
@@ -223,7 +230,8 @@ namespace Infrastructure.Services
                     {
                         QuestionId = question.Id,
                         Text = pq.Options[i],
-                        IsCorrect = (i == pq.CorrectOptionIndex)
+                        IsCorrect = (i == pq.CorrectOptionIndex),
+                        DisplayOrder = i
                     };
                     _db.QuestionOptions.Add(option);
                 }
@@ -254,17 +262,16 @@ namespace Infrastructure.Services
         public async Task<QuizDTO> GetQuizByIdForInstructorAsync(string quizId, string instructorId)
         {
             var quiz = await _db.Quizzes
-                .Include(q => q.Group)
-                .Include(q => q.Instructor)
-                .Include(q => q.QuizModels)
-                    .ThenInclude(qm => qm.Questions)
-                        .ThenInclude(ques => ques.Options)
-                .AsNoTracking()
-                .FirstOrDefaultAsync(q => q.Id == quizId);
+        .Include(q => q.Group)
+        .Include(q => q.Instructor)
+        .Include(q => q.QuizModels)
+            .ThenInclude(qm => qm.Questions)
+                .ThenInclude(ques => ques.Options.OrderBy(o => o.DisplayOrder))
+        .AsNoTracking()
+        .FirstOrDefaultAsync(q => q.Id == quizId);
 
             if (quiz == null) throw new ArgumentException("Quiz not found.");
 
-            // Although we check ownership in the controller, an extra check here is good practice.
             if (quiz.InstructorId != instructorId) throw new ArgumentException("Quiz does not belong to the requesting instructor.");
 
             var quizDto = MapQuizToDTO(quiz, true);
@@ -320,18 +327,22 @@ namespace Infrastructure.Services
                 .OrderByDescending(q => q.DueDate)
                 .ToListAsync();
 
-            return quizzes.Select(q => new StudentQuizListItemDTO
-            {
-                QuizId = q.Id,
-                Title = q.Title,
-                Description = q.Description,
-                CourseTitle = q.Group?.Course?.Title ?? "N/A",
-                GroupLabel = q.Group?.Label ?? "N/A",
-                DueDate = q.DueDate,
-                DurationMinutes = q.DurationMinutes,
-                MaxAttempts = q.MaxAttempts,
-                AttemptsMade = q.Attempts.Count(a => a.Status == QuizAttemptStatus.Submitted || a.Status == QuizAttemptStatus.Graded || a.Status == QuizAttemptStatus.TimeExpired),
-                LastAttemptStatus = q.Attempts.OrderByDescending(a => a.StartTime).FirstOrDefault()?.Status.ToString()
+            return quizzes.Select(q => {
+                var lastAttempt = q.Attempts.OrderByDescending(a => a.StartTime).FirstOrDefault();
+                return new StudentQuizListItemDTO
+                {
+                    QuizId = q.Id,
+                    Title = q.Title,
+                    Description = q.Description,
+                    CourseTitle = q.Group?.Course?.Title ?? "N/A",
+                    GroupLabel = q.Group?.Label ?? "N/A",
+                    DueDate = q.DueDate,
+                    DurationMinutes = q.DurationMinutes,
+                    MaxAttempts = q.MaxAttempts,
+                    AttemptsMade = q.Attempts.Count(a => a.Status != QuizAttemptStatus.InProgress),
+                    LastAttemptStatus = lastAttempt?.Status.ToString(),
+                    LastAttemptId = lastAttempt?.Id
+                };
             }).ToList();
         }
 
@@ -401,13 +412,13 @@ namespace Infrastructure.Services
         private async Task<StudentQuizAttemptDTO> GetStudentQuizAttemptDetailsAsync(string attemptId, string studentId, bool shuffleQuestions)
         {
             var attempt = await _db.StudentQuizAttempts
-                .Include(a => a.Quiz)
-                .Include(a => a.QuizModel)
-                    .ThenInclude(qm => qm.Questions)
-                        .ThenInclude(q => q.Options)
-                .Include(a => a.Answers)
-                .AsNoTracking()
-                .FirstOrDefaultAsync(a => a.Id == attemptId && a.StudentId == studentId);
+        .Include(a => a.Quiz)
+        .Include(a => a.QuizModel)
+            .ThenInclude(qm => qm.Questions)
+                .ThenInclude(q => q.Options.OrderBy(o => o.DisplayOrder))
+        .Include(a => a.Answers)
+        .AsNoTracking()
+        .FirstOrDefaultAsync(a => a.Id == attemptId && a.StudentId == studentId);
 
             if (attempt == null) throw new ArgumentException("Attempt not found.");
 

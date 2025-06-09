@@ -18,8 +18,6 @@ namespace Grad_Project_LMS.Controller
             _quizService = quizService;
         }
 
-        // --- INSTRUCTOR ENDPOINTS ---
-
         [HttpPost]
         public async Task<ActionResult<QuizDTO>> CreateQuiz([FromBody] CreateQuizDTO dto)
         {
@@ -137,7 +135,6 @@ namespace Grad_Project_LMS.Controller
             catch (Exception ex) { return StatusCode(500, $"Internal server error: {ex.Message}"); }
         }
 
-        // --- STUDENT ENDPOINTS ---
 
         [HttpGet("student/available")]
         public async Task<ActionResult<IReadOnlyList<StudentQuizListItemDTO>>> GetAvailableQuizzesForStudent([FromQuery] string studentId)

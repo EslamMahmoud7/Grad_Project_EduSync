@@ -72,7 +72,6 @@ namespace Infrastructure
             services
                 .AddAuthentication(options =>
                 {
-                    // THIS IS CRUCIAL - Set default schemes
                     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
                     options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -95,7 +94,6 @@ namespace Infrastructure
                         RoleClaimType = ClaimTypes.Role,
                     };
 
-                    // Add events for debugging
                     options.Events = new JwtBearerEvents
                     {
                         OnAuthenticationFailed = context =>

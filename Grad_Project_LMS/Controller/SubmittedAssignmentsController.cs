@@ -108,7 +108,7 @@ namespace Grad_Project_LMS.Controller
             }
             catch (InvalidOperationException ex)
             {
-                return BadRequest(ex.Message); // e.g., trying to edit a graded assignment
+                return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {
